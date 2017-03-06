@@ -1,3 +1,3 @@
 # xweb
 
-A web framework having the same usage as Flask ,but Less than 500 lines
+A web framework with the same usage as Flask ,but less than 500 lines
