@@ -1,12 +1,11 @@
 from xweb.application import XWeb
-from xweb.application import request
 
 app = XWeb()
 
 
-@app.route('/users/:pk')
-def hello(pk):
-    return request.query_string + pk
+@app.route('/users/:name')
+def hello(name):
+    return 'hello {}'.format(name)
 
 
 app.listen(3000)
