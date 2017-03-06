@@ -1,3 +1,3 @@
 # xweb
 
-A web framework with the same usage as Flask ,but less than 500 lines
+A web framework like koa.js, but less than 500 lines and writen in python
