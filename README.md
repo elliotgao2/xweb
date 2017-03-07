@@ -2,6 +2,15 @@
 
 A web framework with very few code.
 
+## feature
+
+1. few code
+2. do more
+
+## install
+
+`pip install xweb`
+
 ## hello world
 ```python
 from xweb.application import XWeb
@@ -100,3 +109,4 @@ app.listen(3000)
 2. some necessary middleware 
 3. enough test code
 4. support blueprint
+5. sessions support
