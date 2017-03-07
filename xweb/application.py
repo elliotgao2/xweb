@@ -1,3 +1,4 @@
+import json
 import re
 import threading
 
@@ -44,7 +45,10 @@ class XWeb:
         finally:
             headers = [(key, val) for key, val in ctx.response.headers.items()]
             start_response(ctx.response.status, headers)
-            return [str(ctx.response.body).encode('utf-8')]
+            if isinstance(ctx.response.body, str):
+                return [str(ctx.response.body).encode('utf-8')]
+            if isinstance(ctx.response.body, dict):
+                return [json.dumps(ctx.response.body).encode('utf-8')]
 
     @CachedProperty
     def processors(self):
@@ -78,6 +82,6 @@ class XWeb:
 
     def listen(self, port):
         from wsgiref.simple_server import make_server
-        server = make_server('0.0.0.0', port, self)
-        print('serve on 0.0.0.0:{port}'.format(port=port))
+        server = make_server('127.0.0.1', port, self)
+        print('serve on 127.0.0.1:{port}'.format(port=port))
         server.serve_forever()

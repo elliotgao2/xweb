@@ -1,4 +1,5 @@
 import cgi
+import json
 import os
 from urllib.parse import parse_qsl
 
@@ -36,6 +37,9 @@ class File:
                 self._copy_file(fp, chunk_size)
         else:
             self._copy_file(destination, chunk_size)
+
+    def __str__(self):
+        return '<File {}>'.format(self.filename)
 
 
 class Request:
@@ -86,14 +90,6 @@ class Request:
         content_length = int(self.environ.get('CONTENT_LENGTH', 0))
         return self.environ['wsgi.input'].read(content_length).decode('utf-8')
 
-    # @property
-    # def headers(self):
-    #     return self.headers.get('Content-Type', 'application/x-www-form-urlencoded')
-
-    @DictProperty('storage', read_only=True)
-    def data(self):
-        pass
-
     @DictProperty('storage', read_only=True)
     def content_type(self):
         return self.environ.get('CONTENT_TYPE', '').lower()
@@ -106,18 +102,20 @@ class Request:
     def post(self):
         result = {}
 
+        if self.content_type == 'application/json':
+            return self.json
+
         if not self.content_type.startswith('multipart/'):
             pairs = parse_qsl(self.body)
             for key, value in pairs:
                 result[key] = value
             return result
-
-        safe_env = {'QUERY_STRING': ''}  # Build a safe environment for cgi
+        safe_env = {'QUERY_STRING': ''}
         for key in ('REQUEST_METHOD', 'CONTENT_TYPE', 'CONTENT_LENGTH'):
             if key in self.environ:
                 safe_env[key] = self.environ[key]
 
-        data = cgi.FieldStorage(fp=self.body, environ=safe_env, keep_blank_values=True)
+        data = cgi.FieldStorage(fp=self.environ['wsgi.input'], environ=safe_env, keep_blank_values=True)
 
         data = data.list or []
 
@@ -132,9 +130,24 @@ class Request:
         return result
 
     @DictProperty('environ', read_only=True)
+    def files(self):
+        files = {}
+        for name, item in self.post.items():
+            if isinstance(item, File):
+                files[name] = item
+        return files
+
+    @DictProperty('environ', read_only=True)
     def forms(self):
         forms = {}
         for name, item in self.post.items():
             if not isinstance(item, File):
                 forms[name] = item
         return forms
+
+    @DictProperty('environ', read_only=True)
+    def json(self):
+        results = {}
+        if self.content_type == 'application/json':
+            results = json.loads(self.body)
+        return results

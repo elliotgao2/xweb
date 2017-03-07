@@ -20,22 +20,21 @@ app.listen(3000)
 ## request
 
 ```python
-from xweb.application import request
+from xweb.globals import request
 from xweb.application import XWeb
 
 app = XWeb()
 
 
 @app.route('/request/')
-def hello(name):
+def hello():
     request_data = {
         "args":request.args,
-        "url":request.url,
+        "path":request.path,
         "query_string":request.query_string,
         "query":request.query,
         "files":request.files,
-        "form":request.form,
-        "body":request.body,
+        "form":request.forms
     }
     return request_data
 

@@ -31,8 +31,7 @@ def hello(name):
 
 @app.route('/requests/', methods=['POST'])
 def requests():
-    print(request.forms)
-    return request.forms
+    return request.json
 
 
 app.listen(3000)
