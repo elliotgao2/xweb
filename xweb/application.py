@@ -7,8 +7,6 @@ from xweb.exception import HTTPError, RouteError
 from xweb.globals import LocalStorage
 
 
-# TODO: I don't know how to add config to an app is more elegant
-
 class XWeb:
     def __init__(self):
         self.request_middlewares = []
