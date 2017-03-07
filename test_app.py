@@ -41,7 +41,7 @@ def requests():
     #     "form": request.form,
     #     "body": request.body,
     # }
-    return request.ip
+    return request.path
 
 
 app.listen(3000)
