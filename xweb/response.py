@@ -1,6 +1,7 @@
 import json
 
 from xweb.descriptors import HeaderDict
+from xweb.status_code import status_code
 
 
 class Response:
@@ -13,7 +14,10 @@ class Response:
         return '<Response {}>'.format(self.status)
 
     def get_status(self):
-        return self.status
+        if isinstance(self.status, str):
+            return self.status
+        else:
+            return status_code.get(str(self.status), '200 OK')
 
     def get_header(self):
         return [(key, val) for key, val in self.headers.items()]

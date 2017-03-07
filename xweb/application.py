@@ -33,14 +33,14 @@ class XWeb:
                         if ctx.request.method in methods:
                             ctx.response.body = fn(**match.groupdict())
                         else:
-                            raise HTTPError(415)
+                            raise HTTPError(415, '要死要死的')
 
-                            # if not matched:
-                            #     raise HTTPError(404)
+            # if not matched:
+            #     raise HTTPError(404)
 
         except HTTPError as e:
-            ctx.response.body = '404 Not Found'
-            ctx.response.status = '404 Not Found'
+            # ctx.response.body = e.args.get(1, None)
+            ctx.response.status = e.args[0]
         finally:
             status = ctx.response.get_status()
             body = ctx.response.get_body()

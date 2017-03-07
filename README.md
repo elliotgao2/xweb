@@ -21,26 +21,19 @@ app.listen(3000)
 
 ```python
 from xweb.globals import request
-from xweb.application import XWeb
 
-app = XWeb()
+request.path
+request.query_string
+request.query
+request.files
+request.forms
+request.json
+request.ip
+request.hostname
+request.headers
 
-
-@app.route('/request/')
-def hello():
-    request_data = {
-        "args":request.args,
-        "path":request.path,
-        "query_string":request.query_string,
-        "query":request.query,
-        "files":request.files,
-        "form":request.forms
-    }
-    return request_data
-
-
-app.listen(3000)
 ```
+
 
 ## response
 
@@ -48,5 +41,6 @@ app.listen(3000)
 
 ## TODO
 
-1. choose the necessary request data 
-2. design the humanized response structure
+1. more http status code
+2. some necessary middleware 
+3. enough test code

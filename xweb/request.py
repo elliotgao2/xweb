@@ -32,6 +32,8 @@ class File:
 
     def __str__(self):
         return '<File {}>'.format(self.filename)
+    def __repr__(self):
+        return '<File {}>'.format(self.filename)
 
 
 class Request:
@@ -52,7 +54,7 @@ class Request:
         result = HeaderDict()
         for key in self.environ:
             if key[:5] == 'HTTP_':
-                result[key[:5].title().replace('_', '-')] = self.environ[key]
+                result[key[5:].title().replace('_', '-')] = self.environ[key]
             elif key in ('CONTENT_TYPE', 'CONTENT_LENGTH'):
                 result[key.title().replace('_', '-')] = self.environ[key]
         return result

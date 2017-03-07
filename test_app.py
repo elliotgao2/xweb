@@ -24,14 +24,14 @@ def print_on_response2():
     print("I print when a response is returned by the server2")
 
 
-@app.route('/users/:name/')
-def hello(name):
-    return 'hello {}'.format(name)
+@app.route('/')
+def hello():
+    return request.headers
 
 
 @app.route('/requests/', methods=['POST'])
 def requests():
-    return request.forms
+    return request.headers
 
 
 app.listen(3000)
