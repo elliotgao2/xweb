@@ -6,6 +6,7 @@ A web framework with very few code.
 
 1. few code
 2. do more
+3. no dependencies
 
 ## install
 
