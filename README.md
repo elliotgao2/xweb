@@ -1,6 +1,6 @@
 # xweb
 
-A web framework less than 500 lines
+A web framework with very few code.
 
 ## hello world
 ```python
