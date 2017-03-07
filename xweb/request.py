@@ -3,15 +3,7 @@ import json
 import os
 from urllib.parse import parse_qsl
 
-from xweb.descriptors import DictProperty
-
-
-class HeaderDict(dict):
-    def __getattr__(self, item):
-        if not hasattr(self, item):
-            return None
-        else:
-            return getattr(self, item)
+from xweb.descriptors import DictProperty, HeaderDict
 
 
 class File:

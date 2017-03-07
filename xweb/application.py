@@ -1,4 +1,3 @@
-import json
 import re
 import threading
 
@@ -34,7 +33,7 @@ class XWeb:
                         if ctx.request.method in methods:
                             ctx.response.body = fn(**match.groupdict())
                         else:
-                            HTTPError(415)
+                            raise HTTPError(415)
 
                             # if not matched:
                             #     raise HTTPError(404)
@@ -43,12 +42,12 @@ class XWeb:
             ctx.response.body = '404 Not Found'
             ctx.response.status = '404 Not Found'
         finally:
-            headers = [(key, val) for key, val in ctx.response.headers.items()]
-            start_response(ctx.response.status, headers)
-            if isinstance(ctx.response.body, str):
-                return [str(ctx.response.body).encode('utf-8')]
-            if isinstance(ctx.response.body, dict):
-                return [json.dumps(ctx.response.body).encode('utf-8')]
+            status = ctx.response.get_status()
+            body = ctx.response.get_body()
+            header = ctx.response.get_header()
+
+            start_response(status, header)
+            return [body.encode('utf-8')]
 
     @CachedProperty
     def processors(self):
