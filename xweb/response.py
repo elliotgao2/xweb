@@ -5,6 +5,10 @@ from xweb.status_code import status_code
 
 
 class Response:
+    """
+    I have no words to describe this class
+    """
+
     def __init__(self):
         self.body = None
         self.headers = HeaderDict()

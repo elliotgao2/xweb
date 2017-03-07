@@ -7,6 +7,9 @@ from xweb.descriptors import DictProperty, HeaderDict
 
 
 class File:
+    """
+    For wrap request files
+    """
     def __init__(self, file, name, filename):
         self.file = file
         self.name = name
@@ -32,11 +35,15 @@ class File:
 
     def __str__(self):
         return '<File {}>'.format(self.filename)
+
     def __repr__(self):
         return '<File {}>'.format(self.filename)
 
 
 class Request:
+    """
+    Parse things we need from environ
+    """
     def __init__(self, environ):
         self.environ = environ
         self.storage = {}

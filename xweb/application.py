@@ -7,6 +7,8 @@ from xweb.exception import HTTPError, RouteError
 from xweb.globals import LocalStorage
 
 
+# TODO: I don't know how to add config to an app is more elegant
+
 class XWeb:
     def __init__(self):
         self.request_middlewares = []
@@ -33,10 +35,10 @@ class XWeb:
                         if ctx.request.method in methods:
                             ctx.response.body = fn(**match.groupdict())
                         else:
-                            raise HTTPError(415, '要死要死的')
+                            raise HTTPError(405)
 
-            # if not matched:
-            #     raise HTTPError(404)
+                            # if not matched:
+                            #     raise HTTPError(404)
 
         except HTTPError as e:
             # ctx.response.body = e.args.get(1, None)
@@ -74,12 +76,18 @@ class XWeb:
                        lambda m: '(?P<{}>[a-z0-9-]+)'.format(m.group('params')),
                        path) + '$')
             if pattern in map(lambda i: i[0], self.route_processors):
-                raise RouteError('Routes repeat defining {}'.format(path))
+                raise RouteError('Route {} repeat defining'.format(path))
             self.route_processors.append((pattern, methods, fn))
 
         return decorator
 
     def listen(self, port):
+        """
+        this server is just for developing. do not using this in production
+
+        :param port: port
+        :return:
+        """
         from wsgiref.simple_server import make_server
         server = make_server('127.0.0.1', port, self)
         print('serve on 127.0.0.1:{port}'.format(port=port))

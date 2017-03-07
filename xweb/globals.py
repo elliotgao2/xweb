@@ -3,7 +3,9 @@ from functools import partial
 
 
 class LocalStorage(dict):
-    """"""
+    """
+    Store all context into the same dict
+    """
     thread_context_map = {}
 
     @classmethod
@@ -16,6 +18,9 @@ class LocalStorage(dict):
 
 
 class LocalProxy:
+    """
+    Inspired by flask
+    """
     def __init__(self, fun):
         self.fun = fun
 

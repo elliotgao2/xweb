@@ -7,4 +7,4 @@ class RouteError(XWebException):
 
 
 class HTTPError(XWebException):
-    """HTTPError"""
+    """ HTTPError """

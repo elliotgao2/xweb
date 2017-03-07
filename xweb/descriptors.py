@@ -3,6 +3,9 @@ from functools import update_wrapper
 
 
 class CachedProperty:
+    """
+    Cache properties
+    """
     def __init__(self, func):
         update_wrapper(self, func)
         self.func = func
@@ -15,6 +18,9 @@ class CachedProperty:
 
 
 class DictProperty:
+    """
+    Properties could be modified in a excepted way
+    """
     def __init__(self, storage, read_only=False):
         self.storage = storage
         self.read_only = read_only
@@ -47,6 +53,10 @@ class DictProperty:
 
 
 class HeaderDict(dict):
+    """
+    Avoid attribute error.
+    Header's keys in good format.
+    """
     def __getattr__(self, item):
         if not hasattr(self, item):
             return None

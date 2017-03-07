@@ -6,5 +6,3 @@ class Context:
     def __init__(self, environ):
         self.request = Request(environ)
         self.response = Response()
-
-
