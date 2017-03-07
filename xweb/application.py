@@ -1,11 +1,23 @@
 import re
 import threading
-from functools import partial
+from functools import partial, update_wrapper
+from pprint import pprint
 
 from xweb.context import Context
 from xweb.exception import HTTPError, RouteError
 
 thread_context_map = {}
+
+
+class CachedProperty:
+    def __init__(self, func):
+        update_wrapper(self, func)
+        self.func = func
+
+    def __get__(self, instance, owner):
+        if instance is None: return self
+        value = instance.__dict__[self.func.__name__] = self.func(instance)
+        return value
 
 
 def load_context(name):
@@ -26,37 +38,56 @@ response = Local(partial(load_context, 'response'))
 
 class XWeb:
     def __init__(self):
-        self.processors = []
+        self.request_middlewares = []
+        self.route_processors = []
+        self.response_middlewares = []
 
     def __call__(self, environ, start_response):
         identify = str(threading.current_thread().ident)
         ctx = Context(environ)
         thread_context_map[identify] = ctx
+        matched = False
 
-        for pattern, methods, fn in self.processors:
-            try:
-                if pattern is not None:
+        try:
+            for pattern, methods, fn in self.processors:
+
+                if pattern is None:
+                    fn()
+                else:
                     match = pattern.match(ctx.request.path)
                     if match:
+                        matched = True
+
                         if ctx.request.method in methods:
                             ctx.response.body = fn(**match.groupdict())
-                            break
                         else:
                             HTTPError(415)
-                else:
-                    fn(ctx)
-                raise HTTPError(404)
-            except HTTPError as e:
-                print(e.args[0])
-                ctx.response.body = '404 Not Found'
-                ctx.response.status = '404 Not Found'
-            finally:
-                headers = [(key, val) for key, val in ctx.response.headers.items()]
-                start_response(ctx.response.status, headers)
-                return [str(ctx.response.body).encode('utf-8')]
 
-    def plugin(self, fn):
-        self.processors.append((None, None, fn))
+            if not matched:
+                raise HTTPError(404)
+
+        except HTTPError as e:
+            ctx.response.body = '404 Not Found'
+            ctx.response.status = '404 Not Found'
+        finally:
+            headers = [(key, val) for key, val in ctx.response.headers.items()]
+            start_response(ctx.response.status, headers)
+            return [str(ctx.response.body).encode('utf-8')]
+
+    @CachedProperty
+    def processors(self):
+        self.request_middlewares.extend(self.route_processors)
+        self.request_middlewares.extend(self.response_middlewares)
+        return self.request_middlewares
+
+    def middleware(self, middleware_type):
+        def decorator(fn):
+            if middleware_type == 'response':
+                self.response_middlewares.extend([(None, None, fn)])
+            else:
+                self.request_middlewares.extend([(None, None, fn)])
+
+        return decorator
 
     def route(self, path, methods=None):
         if methods is None:
@@ -67,9 +98,9 @@ class XWeb:
                 re.sub(r':(?P<params>[a-z_]+)',
                        lambda m: '(?P<{}>[a-z0-9-]+)'.format(m.group('params')),
                        path) + '$')
-            if pattern in map(lambda i: i[0], self.processors):
-                raise RouteError('Repeat defining routes {}'.format(path))
-            self.processors.append((pattern, methods, fn))
+            if pattern in map(lambda i: i[0], self.route_processors):
+                raise RouteError('Routes repeat defining {}'.format(path))
+            self.route_processors.append((pattern, methods, fn))
 
         return decorator
 
