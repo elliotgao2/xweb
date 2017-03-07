@@ -109,4 +109,4 @@ app.listen(3000)
 2. some necessary middleware 
 3. enough test code
 4. support blueprint
-5. sessions support
+5. a cool logo
