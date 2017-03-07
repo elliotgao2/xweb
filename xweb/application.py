@@ -1,39 +1,10 @@
 import re
 import threading
-from functools import partial, update_wrapper
-from pprint import pprint
 
 from xweb.context import Context
+from xweb.descriptors import CachedProperty
 from xweb.exception import HTTPError, RouteError
-
-thread_context_map = {}
-
-
-class CachedProperty:
-    def __init__(self, func):
-        update_wrapper(self, func)
-        self.func = func
-
-    def __get__(self, instance, owner):
-        if instance is None: return self
-        value = instance.__dict__[self.func.__name__] = self.func(instance)
-        return value
-
-
-def load_context(name):
-    return getattr(thread_context_map[str(threading.current_thread().ident)], name)
-
-
-class Local:
-    def __init__(self, fun):
-        self.fun = fun
-
-    def __getattr__(self, item):
-        return getattr(self.fun(), item)
-
-
-request = Local(partial(load_context, 'request'))
-response = Local(partial(load_context, 'response'))
+from xweb.globals import LocalStorage
 
 
 class XWeb:
@@ -41,11 +12,12 @@ class XWeb:
         self.request_middlewares = []
         self.route_processors = []
         self.response_middlewares = []
+        self.identify = str(threading.current_thread().ident)
 
     def __call__(self, environ, start_response):
-        identify = str(threading.current_thread().ident)
+
         ctx = Context(environ)
-        thread_context_map[identify] = ctx
+        LocalStorage.push(self.identify, ctx)
         matched = False
 
         try:
@@ -63,8 +35,8 @@ class XWeb:
                         else:
                             HTTPError(415)
 
-            if not matched:
-                raise HTTPError(404)
+                            # if not matched:
+                            #     raise HTTPError(404)
 
         except HTTPError as e:
             ctx.response.body = '404 Not Found'

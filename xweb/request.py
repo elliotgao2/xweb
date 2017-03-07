@@ -1,34 +1,35 @@
 import json
 from cgi import parse_header
-from functools import partial
 
+from xweb.descriptors import DictProperty
 
 
 class Request:
     def __init__(self, environ):
         self.environ = environ
+        self.storage = {}
 
-    @property
+    @DictProperty('storage', read_only=True)
     def path(self):
         return self.environ.get('PATH_INFO')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def method(self):
         return self.environ.get('REQUEST_METHOD')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def ip(self):
         return self.environ.get('REMOTE_ADDR')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def host(self):
         return self.environ.get('REMOTE_HOST')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def query_string(self):
         return self.environ.get('QUERY_STRING')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def query(self):
         query = {}
         for i in self.query_string.split('&'):
@@ -36,12 +37,12 @@ class Request:
             query[key] = value
         return query
 
-    @property
+    @DictProperty('storage', read_only=True)
     def body(self):
         content_length = int(self.environ.get('CONTENT_LENGTH', 0))
         return self.environ['wsgi.input'].read(content_length).decode('utf-8')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def content_type(self):
         return self.environ.get('CONTENT_TYPE', 'application/x-www-form-urlencoded')
 
@@ -49,7 +50,7 @@ class Request:
     # def headers(self):
     #     return self.headers.get('Content-Type', 'application/x-www-form-urlencoded')
 
-    @property
+    @DictProperty('storage', read_only=True)
     def data(self):
         content_type, parameters = parse_header(self.content_type)
         if content_type == 'application/x-www-form-urlencoded':
@@ -68,5 +69,3 @@ class Request:
             return self.body
         else:
             return self.body
-
-
