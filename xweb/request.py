@@ -66,7 +66,7 @@ class Request:
         return self.environ.get('REMOTE_ADDR')
 
     @DictProperty('storage', read_only=True)
-    def host(self):
+    def hostname(self):
         return self.environ.get('REMOTE_HOST')
 
     @DictProperty('storage', read_only=True)
@@ -86,10 +86,6 @@ class Request:
         content_length = int(self.environ.get('CONTENT_LENGTH', 0))
         return self.environ['wsgi.input'].read(content_length).decode('utf-8')
 
-    @DictProperty('storage', read_only=True)
-    def content_type(self):
-        return self.environ.get('CONTENT_TYPE', 'application/x-www-form-urlencoded')
-
     # @property
     # def headers(self):
     #     return self.headers.get('Content-Type', 'application/x-www-form-urlencoded')
@@ -97,6 +93,14 @@ class Request:
     @DictProperty('storage', read_only=True)
     def data(self):
         pass
+
+    @DictProperty('storage', read_only=True)
+    def content_type(self):
+        return self.environ.get('CONTENT_TYPE', '').lower()
+
+    @DictProperty('storage', read_only=True)
+    def content_length(self):
+        return int(self.environ.get('CONTENT_LENGTH') or -1)
 
     @DictProperty('storage', read_only=True)
     def post(self):
@@ -129,10 +133,6 @@ class Request:
 
     @DictProperty('environ', read_only=True)
     def forms(self):
-        """ Form values parsed from an `url-encoded` or `multipart/form-data`
-            encoded POST or PUT request body. The result is returned as a
-            :class:`FormsDict`. All keys and values are strings. File uploads
-            are stored separately in :attr:`files`. """
         forms = {}
         for name, item in self.post.items():
             if not isinstance(item, File):

@@ -1,5 +1,4 @@
 from xweb.application import XWeb
-from xweb.exception import HTTPError
 from xweb.globals import request
 
 app = XWeb()
@@ -30,18 +29,10 @@ def hello(name):
     return 'hello {}'.format(name)
 
 
-@app.route('/requests/')
+@app.route('/requests/', methods=['POST'])
 def requests():
-    # request_data = {
-    #     "args": request.args,
-    #     "url": request.url,
-    #     "query_string": request.query_string,
-    #     "query": request.query,
-    #     "files": request.files,
-    #     "form": request.form,
-    #     "body": request.body,
-    # }
-    return request.path
+    print(request.forms)
+    return request.forms
 
 
 app.listen(3000)
