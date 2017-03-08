@@ -110,7 +110,8 @@ app.listen(3000)
 ### important:
 
 1. auto-reload
-2. test code
+2. more test code
+3. rewrite global request and response
 
 ### normal:
 
