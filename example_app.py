@@ -1,5 +1,5 @@
 from xweb.application import XWeb
-from xweb.globals import request, LocalStorage
+from xweb.globals import request
 
 app = XWeb()
 

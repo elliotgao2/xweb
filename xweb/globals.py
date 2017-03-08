@@ -2,7 +2,6 @@ import threading
 from functools import partial
 
 
-
 class LocalStorage(dict):
     """
     Store all context into the same dict
