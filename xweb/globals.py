@@ -2,7 +2,6 @@ import threading
 from functools import partial
 
 
-# TODO I don't make sure the code as follows is right because they passed my test, and i need help to rewrite this part
 
 class LocalStorage(dict):
     """
@@ -12,7 +11,6 @@ class LocalStorage(dict):
 
     @classmethod
     def load_context(cls, name):
-        print(cls.thread_context_map)
         return getattr(cls.thread_context_map[str(threading.current_thread().ident)], name)
 
     @classmethod

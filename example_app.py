@@ -1,5 +1,5 @@
 from xweb.application import XWeb
-from xweb.globals import request
+from xweb.globals import request, LocalStorage
 
 app = XWeb()
 
@@ -47,8 +47,6 @@ def query():
 @app.post('/post')
 def handler():
     return request.forms
-
-
 
 
 app.listen(3000)
