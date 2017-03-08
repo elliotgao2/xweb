@@ -4,9 +4,10 @@ A web framework with very few code.
 
 ## feature
 
-1. no dependencies
-2. very few code
-3. easy to use
+1. Without dependencies
+2. Very few code
+3. Easy to use
+4. Give up python2
 
 ## install
 
