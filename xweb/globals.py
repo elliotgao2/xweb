@@ -2,6 +2,8 @@ import threading
 from functools import partial
 
 
+# TODO I don't make sure the code as follows is right because they passed my test, and i need help to rewrite this part
+
 class LocalStorage(dict):
     """
     Store all context into the same dict
@@ -22,6 +24,7 @@ class LocalProxy:
     """
     Inspired by flask
     """
+
     def __init__(self, fun):
         self.fun = fun
 
