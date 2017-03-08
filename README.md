@@ -124,11 +124,11 @@ app.listen(3000)
 
 1. auto-reload
 2. more test code
-3. rewrite global request and response
+3. add more necessary request arguments
 
 ### normal:
 
 1. more http status code
-2. some necessary middleware 
-3. support blueprint
+2. add necessary middleware 
+3. support blueprints
 4. a cool logo
