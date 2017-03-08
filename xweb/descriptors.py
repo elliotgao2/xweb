@@ -69,10 +69,9 @@ class HeaderDict:
         return self.store.get(item, None)
 
     def __setitem__(self, key, value):
-        if not isinstance(key, str) or not isinstance(value, str):
-            raise ValueError(
-                'headers key or value must be string but get key:{} value:{}'.format(type(key), type(value)))
-        self.store[key.title().replace('_', '-')] = value
+        if not isinstance(key, str):
+            raise ValueError('headers key must be string but get key:{}'.format(type(key)))
+        self.store[key.title().replace('_', '-')] = str(value)
 
     def items(self):
         return self.store.items()

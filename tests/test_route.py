@@ -14,12 +14,12 @@ def test_get():
         return 'OK'
 
     client = webtest.TestApp(app)
-    response = client.get('/get')
-    assert response.text == 'OK'
-    assert response.status_int == 200
+    resp = client.get('/get')
+    assert resp.text == 'OK'
+    assert resp.status_int == 200
 
-    response = client.post('/get', expect_errors=True)
-    assert response.status_int == 405
+    resp = client.post('/get', expect_errors=True)
+    assert resp.status_int == 405
 
 
 def test_slash():
@@ -31,11 +31,11 @@ def test_slash():
 
     client = webtest.TestApp(app)
 
-    response = client.get('/get')
-    assert response.text == 'OK'
+    resp = client.get('/get')
+    assert resp.text == 'OK'
 
-    response = client.get('/get/')
-    assert response.text == 'OK'
+    resp = client.get('/get/')
+    assert resp.text == 'OK'
 
 
 def test_post():
@@ -46,11 +46,11 @@ def test_post():
         return request.forms
 
     client = webtest.TestApp(app)
-    response = client.post('/post', params={"name": "xweb"})
-    assert response.status_int == 200
+    resp = client.post('/post', params={"name": "xweb"})
+    assert resp.status_int == 200
 
-    response = client.get('/post', expect_errors=True)
-    assert response.status_int == 405
+    resp = client.get('/post', expect_errors=True)
+    assert resp.status_int == 405
 
 
 def test_put():
@@ -61,11 +61,11 @@ def test_put():
         return 'OK'
 
     client = webtest.TestApp(app)
-    response = client.put('/put')
-    assert response.text == 'OK'
+    resp = client.put('/put')
+    assert resp.text == 'OK'
 
-    response = client.get('/put', expect_errors=True)
-    assert response.status_int == 405
+    resp = client.get('/put', expect_errors=True)
+    assert resp.status_int == 405
 
 
 def test_patch():
@@ -76,11 +76,11 @@ def test_patch():
         return 'OK'
 
     client = webtest.TestApp(app)
-    response = client.put('/patch')
-    assert response.text == 'OK'
+    resp = client.put('/patch')
+    assert resp.text == 'OK'
 
-    response = client.get('/patch', expect_errors=True)
-    assert response.status_int == 405
+    resp = client.get('/patch', expect_errors=True)
+    assert resp.status_int == 405
 
 
 def test_head():
@@ -91,11 +91,11 @@ def test_head():
         return 'OK'
 
     client = webtest.TestApp(app)
-    response = client.put('/head')
-    assert response.text == 'OK'
+    resp = client.put('/head')
+    assert resp.text == 'OK'
 
-    response = client.get('/head', expect_errors=True)
-    assert response.status_int == 405
+    resp = client.get('/head', expect_errors=True)
+    assert resp.status_int == 405
 
 
 def test_option():
@@ -106,11 +106,11 @@ def test_option():
         return 'OK'
 
     client = webtest.TestApp(app)
-    response = client.put('/option')
-    assert response.text == 'OK'
+    resp = client.put('/option')
+    assert resp.text == 'OK'
 
-    response = client.get('/option', expect_errors=True)
-    assert response.status_int == 405
+    resp = client.get('/option', expect_errors=True)
+    assert resp.status_int == 405
 
 
 def test_static_routes():
@@ -125,11 +125,11 @@ def test_static_routes():
         return 'OK2'
 
     client = webtest.TestApp(app)
-    response = client.get('/test')
-    assert response.text == 'OK1'
+    resp = client.get('/test')
+    assert resp.text == 'OK1'
 
-    response = client.get('/pizazz')
-    assert response.text == 'OK2'
+    resp = client.get('/pizazz')
+    assert resp.text == 'OK2'
 
 
 def test_dynamic_route():
@@ -144,8 +144,8 @@ def test_dynamic_route():
         return 'OK'
 
     client = webtest.TestApp(app)
-    response = client.get('/folder/test123/23')
-    assert response.text == 'OK'
+    resp = client.get('/folder/test123/23')
+    assert resp.text == 'OK'
     assert results[0] == 'test123'
     assert results[1] == '23'
 

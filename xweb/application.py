@@ -40,9 +40,8 @@ class XWeb:
                 raise HTTPError(404)
 
         except HTTPError as e:
-            # ctx.response.body = e.args.get(1, None)
-
             ctx.response.status = e.args[0]
+            ctx.response.body = ctx.response.get_status_detail()
         finally:
             status = ctx.response.get_status()
             body = ctx.response.get_body()

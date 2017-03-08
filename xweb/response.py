@@ -12,23 +12,23 @@ class Response:
     def __init__(self):
         self.body = None
         self.headers = HeaderDict()
-        self.status = '200 OK'
+        self.status = 200
 
     def __repr__(self):
         return '<Response {}>'.format(self.status)
 
+    def get_status_detail(self):
+        return status_code.get(str(self.status))
+
     def get_status(self):
-        if isinstance(self.status, str):
-            return self.status
-        else:
-            return status_code.get(str(self.status))
+        return str(self.status) + ' ' + status_code.get(str(self.status))
 
     def get_header(self):
         return [(key, val) for key, val in self.headers.items()]
 
     def get_body(self):
         if self.body is None:
-            self.headers['Content-Length'] = '0'
+            self.headers['Content-Length'] = 0
             return ''
         if isinstance(self.body, str):
             self.headers['Content-Type'] = 'text/plain'
