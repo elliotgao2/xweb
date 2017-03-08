@@ -109,6 +109,14 @@ app.listen(3000)
 
 2. `pytest`
 
+## contribution
+
+1. star
+2. fork
+3. add your code
+4. add test code and run test
+5. pull request
+
 ## TODO
 
 
