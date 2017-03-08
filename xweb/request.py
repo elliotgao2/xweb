@@ -132,7 +132,7 @@ class Request:
 
         return result
 
-    @DictProperty('environ', read_only=True)
+    @DictProperty('storage', read_only=True)
     def files(self):
         files = {}
         for name, item in self.post.items():
