@@ -30,6 +30,9 @@ class Response:
         if self.body is None:
             self.headers['Content-Length'] = 0
             return ''
+        if isinstance(self.body, int):
+            self.headers['Content-Type'] = 'text/plain'
+            return str(self.body)
         if isinstance(self.body, str):
             self.headers['Content-Type'] = 'text/plain'
             return self.body
@@ -39,3 +42,4 @@ class Response:
         if isinstance(self.body, bytes):
             self.headers['Content-Type'] = 'application/octet-stream'
             return self.body
+        return str(self.body)

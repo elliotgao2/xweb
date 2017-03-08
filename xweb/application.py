@@ -19,12 +19,16 @@ class XWeb:
         ctx = Context(environ)
         LocalStorage.push(self.identify, ctx)
         matched = False
-
+        override = False
         try:
             for pattern, methods, fn in self.processors:
 
                 if pattern is None:
-                    fn()
+                    result = fn()
+                    if result is not None:
+                        ctx.response.body = result
+                        override = True
+                        break
                 else:
                     match = pattern.match(ctx.request.path)
                     if match:
@@ -32,11 +36,10 @@ class XWeb:
 
                         if ctx.request.method not in methods:
                             raise HTTPError(405)
-
                         else:
                             ctx.response.body = fn(**match.groupdict())
 
-            if not matched:
+            if not matched and not override:
                 raise HTTPError(404)
 
         except HTTPError as e:

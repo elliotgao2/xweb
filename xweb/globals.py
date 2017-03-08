@@ -10,6 +10,7 @@ class LocalStorage(dict):
 
     @classmethod
     def load_context(cls, name):
+        print(cls.thread_context_map)
         return getattr(cls.thread_context_map[str(threading.current_thread().ident)], name)
 
     @classmethod

@@ -125,9 +125,9 @@ def test_post_form_multipart_form_data():
     payload = '------xweb\r\n' \
               'Content-Disposition: form-data; name="test"\r\n' \
               '\r\n' \
-              'OK\r\n' \
+              'fuck\r\n' \
               '------xweb--\r\n'
     headers = {'content-type': 'multipart/form-data; boundary=----xweb'}
     client = webtest.TestApp(app)
     resp = client.post('/', params=payload, headers=headers)
-    assert resp.json.get('test') == 'OK'
+    assert resp.json.get('test') == 'fuck'
