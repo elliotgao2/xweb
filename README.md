@@ -103,6 +103,11 @@ def call_my_name(name):
 
 app.listen(3000)
 ```
+## test
+
+1. `pip install -r requirement.txt`
+
+2. `pytest`
 
 ## TODO
 
