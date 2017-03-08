@@ -140,7 +140,7 @@ class Request:
                 files[name] = item
         return files
 
-    @DictProperty('environ', read_only=True)
+    @DictProperty('storage', read_only=True)
     def forms(self):
         forms = {}
         for name, item in self.post.items():
@@ -148,7 +148,7 @@ class Request:
                 forms[name] = item
         return forms
 
-    @DictProperty('environ', read_only=True)
+    @DictProperty('storage', read_only=True)
     def json(self):
         results = {}
         if self.content_type == 'application/json':
