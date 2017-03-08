@@ -52,10 +52,7 @@ class Request:
 
     @DictProperty('storage', read_only=True)
     def path(self):
-        path = self.environ.get('PATH_INFO', '')
-        if path == '/':
-            return path
-        return self.environ.get('PATH_INFO', '').rstrip('/')
+        return self.environ.get('PATH_INFO', '')
 
     @DictProperty('storage', read_only=True)
     def method(self):

@@ -34,8 +34,8 @@ def test_slash():
     resp = client.get('/get')
     assert resp.text == 'OK'
 
-    resp = client.get('/get/')
-    assert resp.text == 'OK'
+    resp = client.get('/get/',expect_errors=True)
+    assert resp.status_int == 404
 
 
 def test_post():
