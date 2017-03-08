@@ -26,12 +26,22 @@ def print_on_response2():
 
 @app.route('/')
 def hello():
+    return 'hello world!'
+
+
+@app.route('/headers/')
+def headers():
     return request.headers
 
 
-@app.route('/requests/', methods=['POST'])
-def requests():
-    return request.headers
+@app.route('/forms/', methods=['POST'])
+def forms():
+    return request.forms
+
+
+@app.route('/query/')
+def query():
+    return request.query
 
 
 app.listen(3000)

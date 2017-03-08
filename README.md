@@ -106,8 +106,15 @@ app.listen(3000)
 
 ## TODO
 
+
+### important:
+
+1. auto-reload
+2. test code
+
+### normal:
+
 1. more http status code
 2. some necessary middleware 
-3. enough test code
-4. support blueprint
-5. a cool logo
+3. support blueprint
+4. a cool logo
