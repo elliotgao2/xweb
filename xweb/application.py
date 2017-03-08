@@ -51,9 +51,11 @@ class XWeb:
 
     @CachedProperty
     def processors(self):
-        self.request_middlewares.extend(self.route_processors)
-        self.request_middlewares.extend(self.response_middlewares)
-        return self.request_middlewares
+        processors = []
+        processors.extend(self.request_middlewares)
+        processors.extend(self.route_processors)
+        processors.extend(self.response_middlewares)
+        return processors
 
     def middleware(self, middleware_type):
         def decorator(fn):
