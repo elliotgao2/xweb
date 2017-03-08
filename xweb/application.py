@@ -30,16 +30,18 @@ class XWeb:
                     if match:
                         matched = True
 
-                        if ctx.request.method in methods:
-                            ctx.response.body = fn(**match.groupdict())
-                        else:
+                        if ctx.request.method not in methods:
                             raise HTTPError(405)
 
-                            # if not matched:
-                            #     raise HTTPError(404)
+                        else:
+                            ctx.response.body = fn(**match.groupdict())
+
+            if not matched:
+                raise HTTPError(404)
 
         except HTTPError as e:
             # ctx.response.body = e.args.get(1, None)
+
             ctx.response.status = e.args[0]
         finally:
             status = ctx.response.get_status()
@@ -73,7 +75,7 @@ class XWeb:
         def decorator(fn):
             pattern = re.compile(
                 re.sub(r':(?P<params>[a-z_]+)',
-                       lambda m: '(?P<{}>[a-z0-9-]+)'.format(m.group('params')),
+                       lambda m: '(?P<{}>[a-z0-9-]+)'.format(m.group('params')).rstrip('/'),
                        path) + '$')
             if pattern in map(lambda i: i[0], self.route_processors):
                 raise RouteError('Route {} repeat defining'.format(path))

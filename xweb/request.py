@@ -10,6 +10,7 @@ class File:
     """
     For wrap request files
     """
+
     def __init__(self, file, name, filename):
         self.file = file
         self.name = name
@@ -44,13 +45,17 @@ class Request:
     """
     Parse things we need from environ
     """
+
     def __init__(self, environ):
         self.environ = environ
         self.storage = {}
 
     @DictProperty('storage', read_only=True)
     def path(self):
-        return self.environ.get('PATH_INFO', '')
+        path = self.environ.get('PATH_INFO', '')
+        if path == '/':
+            return path
+        return self.environ.get('PATH_INFO', '').rstrip('/')
 
     @DictProperty('storage', read_only=True)
     def method(self):

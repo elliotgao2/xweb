@@ -44,4 +44,11 @@ def query():
     return request.query
 
 
+@app.post('/post')
+def handler():
+    return request.forms
+
+
+
+
 app.listen(3000)

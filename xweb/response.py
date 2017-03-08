@@ -21,7 +21,7 @@ class Response:
         if isinstance(self.status, str):
             return self.status
         else:
-            return status_code.get(str(self.status), '200 OK')
+            return status_code.get(str(self.status))
 
     def get_header(self):
         return [(key, val) for key, val in self.headers.items()]

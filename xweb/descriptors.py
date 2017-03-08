@@ -53,17 +53,26 @@ class DictProperty:
         del getattr(instance, self.storage)[self.name]
 
 
-class HeaderDict(dict):
+class HeaderDict:
     """
     Avoid attribute error.
     Header's keys in good format.
     """
 
-    def __getattr__(self, item):
-        if not hasattr(self, item):
-            return None
-        else:
-            return getattr(self, item)
+    def __init__(self):
+        self.store = {}
 
-    def __setattr__(self, key, value):
-        setattr(key.title().replace('_', '-'), value)
+    def __getattr__(self, item):
+        return self.store.get(item, None)
+
+    def __getitem__(self, item):
+        return self.store.get(item, None)
+
+    def __setitem__(self, key, value):
+        if not isinstance(key, str) or not isinstance(value, str):
+            raise ValueError(
+                'headers key or value must be string but get key:{} value:{}'.format(type(key), type(value)))
+        self.store[key.title().replace('_', '-')] = value
+
+    def items(self):
+        return self.store.items()
