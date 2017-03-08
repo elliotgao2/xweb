@@ -4,9 +4,9 @@ A web framework with very few code.
 
 ## feature
 
-1. few code
-2. do more
-3. no dependencies
+1. no dependencies
+2. very few code
+3. easy to use
 
 ## install
 
