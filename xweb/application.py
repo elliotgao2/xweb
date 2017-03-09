@@ -5,7 +5,6 @@ from xweb.context import Context
 from xweb.descriptors import CachedProperty
 from xweb.exception import HTTPError, RouteError
 from xweb.globals import LocalStorage
-from xweb.log import log
 
 
 class XWeb:
@@ -54,8 +53,6 @@ class XWeb:
             status = ctx.response.get_status()
             body = ctx.response.get_body()
             header = ctx.response.get_header()
-            
-            log.info('{mehtod} {url} {status_code}')
             start_response(status, header)
             return [body.encode('utf-8')]
 

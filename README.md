@@ -39,11 +39,30 @@ from xweb.application import XWeb
 
 app = XWeb()
 
-
-@app.route('/:name/')
+@app.route('/:name/',methods=['GET','POST'])
 def call_my_name(name):
     return 'hi {}!'.format(name)
+    
+@app.post('/post/')
+def post():
+    return 'hi post!'
+    
+@app.get('/:name/')
+def get():
+    return 'hi get!'
 
+@app.put('/put/')
+def put():
+    return 'hi put!'
+
+@app.patch('/patch/')
+def patch():
+    return 'hi patch!'
+
+@app.delete('/delete/')
+def delete():
+    return 'hi delete!'
+    
 
 app.listen(3000)
 ```
@@ -130,6 +149,7 @@ def hello():
 
 app.listen(3000)
 ```
+
 
 ## Test
 
