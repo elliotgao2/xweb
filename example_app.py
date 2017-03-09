@@ -30,6 +30,11 @@ def hello():
     return 'hello world!'
 
 
+@app.route('/environ')
+def environ():
+    return str(request.environ)
+
+
 @app.route('/headers/')
 def headers():
     return request.headers.store
