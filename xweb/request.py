@@ -113,15 +113,13 @@ class Request:
             for key, value in pairs:
                 result[key] = value
             return result
+
         safe_env = {'QUERY_STRING': ''}
         for key in ('REQUEST_METHOD', 'CONTENT_TYPE', 'CONTENT_LENGTH'):
             if key in self.environ:
                 safe_env[key] = self.environ[key]
-
         data = cgi.FieldStorage(fp=self.environ['wsgi.input'], environ=safe_env, keep_blank_values=True)
-
         data = data.list or []
-
         for item in data:
             if item.filename:
                 result[item.name] = File(item.file,
