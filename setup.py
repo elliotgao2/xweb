@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='xweb',
-      version='0.0.3',
+      version='0.0.4',
       description='A web framework with very few code.',
       author='gaojiuli',
       author_email='gaojiuli@gmail.com',
@@ -19,7 +19,6 @@ setup(name='xweb',
                    'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware',
                    'Topic :: Internet :: WWW/HTTP :: WSGI :: Server',
                    'Topic :: Software Development :: Libraries :: Application Frameworks',
-                   'Programming Language :: Python :: 3.4',
                    'Programming Language :: Python :: 3.5',
                    'Programming Language :: Python :: 3.6',
                    ],
