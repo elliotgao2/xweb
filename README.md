@@ -29,6 +29,7 @@ app.listen(3000)
 ```
 
 ## Route
+
 ```python
 from xweb.application import XWeb
 
@@ -104,6 +105,28 @@ def call_my_name(name):
 
 app.listen(3000)
 ```
+
+## Exception
+
+```python
+from xweb.application import XWeb
+from xweb.exception import abort
+from xweb.globals import response
+
+app = XWeb()
+
+@app.route('/')
+def hello():
+    abort(500)
+    return 'OK'
+    
+@app.exception(500)
+def hello():
+    response.body = "Something wrong"
+
+app.listen(3000)
+```
+
 ## Test
 
 1. `pip install -r requirement.txt`
