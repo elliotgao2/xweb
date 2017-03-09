@@ -183,8 +183,7 @@ app.listen(3000)
 ### important:
 
 1. auto-reload
-2. a cool logo
-3. documentation
+2. blueprints
 
 ### normal:
 
@@ -192,5 +191,4 @@ app.listen(3000)
 2. more necessary request arguments
 3. more http status code
 4. more necessary middleware 
-5. support blueprints
 
