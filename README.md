@@ -2,18 +2,18 @@
 
 A web framework with very few code.
 
-## feature
+## Features
 
 1. Without dependencies
 2. Very few code
 3. Easy to use
 4. Give up python2
 
-## install
+## Installation
 
 `pip install xweb`
 
-## hello world
+## Hello world
 ```python
 from xweb.application import XWeb
 
@@ -28,7 +28,7 @@ def hello():
 app.listen(3000)
 ```
 
-## route
+## Route
 ```python
 from xweb.application import XWeb
 
@@ -43,7 +43,7 @@ def call_my_name(name):
 app.listen(3000)
 ```
 
-## request
+## Request
 
 ```python
 from xweb.globals import request
@@ -61,7 +61,7 @@ request.headers
 ```
 
 
-## response
+## Response
 
 ```python
 from xweb.globals import response
@@ -71,7 +71,7 @@ response.status
 response.body
 ```
 
-## middleware
+## Middleware
 
 ```python
 from xweb.application import XWeb
@@ -104,13 +104,13 @@ def call_my_name(name):
 
 app.listen(3000)
 ```
-## test
+## Test
 
 1. `pip install -r requirement.txt`
 
 2. `pytest`
 
-## contribution
+## How to contribute
 
 1. star
 2. fork
