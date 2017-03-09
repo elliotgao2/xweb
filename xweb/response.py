@@ -30,16 +30,15 @@ class Response:
         if self.body is None:
             self.headers['Content-Length'] = 0
             return ''
-        if isinstance(self.body, int):
-            self.headers['Content-Type'] = 'text/plain'
-            return str(self.body)
-        if isinstance(self.body, str):
-            self.headers['Content-Type'] = 'text/plain'
-            return self.body
-        if isinstance(self.body, dict):
-            self.headers['Content-Type'] = 'text/json'
-            return json.dumps(self.body)
+
         if isinstance(self.body, bytes):
             self.headers['Content-Type'] = 'application/octet-stream'
             return self.body
-        return str(self.body)
+
+        try:
+            result = json.dumps(self.body)
+            self.headers['Content-Type'] = 'text/json'
+            return result
+        except TypeError:
+            self.headers['Content-Type'] = 'text/plain'
+            return str(self.body)

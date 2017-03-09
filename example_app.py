@@ -31,7 +31,7 @@ def hello():
 
 @app.route('/headers/')
 def headers():
-    return request.headers
+    return request.headers.store
 
 
 @app.route('/forms/', methods=['POST'])
