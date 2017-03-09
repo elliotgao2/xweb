@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(name='xweb',
       version='0.0.4',
-      description='A web framework with very few code.',
+      description='Web framework for the zen of python.',
       author='gaojiuli',
       author_email='gaojiuli@gmail.com',
       url='https://github.com/gaojiuli/xweb',
