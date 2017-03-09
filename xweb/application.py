@@ -4,7 +4,7 @@ import threading
 from xweb.context import Context
 from xweb.descriptors import CachedProperty
 from xweb.exception import HTTPError, RouteError
-from xweb.globals import LocalStorage, response
+from xweb.globals import LocalStorage
 
 
 class XWeb:
@@ -45,11 +45,11 @@ class XWeb:
         except HTTPError as e:
             ctx.response.status = e.args[0]
             ctx.response.body = ctx.response.get_status_detail()
+
             status_code = str(ctx.response.status)
             if status_code in self.exception_handlers:
                 self.exception_handlers[str(status_code)]()
         finally:
-            print(response.body)
             status = ctx.response.get_status()
             body = ctx.response.get_body()
             header = ctx.response.get_header()
