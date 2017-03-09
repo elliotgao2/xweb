@@ -150,12 +150,14 @@ app.listen(3000)
 ### important:
 
 1. auto-reload
-2. more test code
-3. add more necessary request arguments
+2. a cool logo
+3. documentation
 
 ### normal:
 
-1. more http status code
-2. add necessary middleware 
-3. support blueprints
-4. a cool logo
+1. more test code
+2. more necessary request arguments
+3. more http status code
+4. more necessary middleware 
+5. support blueprints
+
