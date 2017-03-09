@@ -83,6 +83,9 @@ request.hostname
 request.headers
 request.host
 request.protocol
+request.body
+request.content_type
+request.content_length
 
 ```
 

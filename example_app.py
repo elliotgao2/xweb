@@ -25,9 +25,9 @@ def print_on_response2():
     print("I print when a response is returned by the server2")
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def hello():
-    print(request.host)
+    print(request.body)
     return 'hello world!'
 
 
