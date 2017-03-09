@@ -45,7 +45,12 @@ def query():
 
 
 @app.post('/post')
-def handler():
+def post():
+    return request.forms
+
+
+@app.post('/exception')
+def post():
     return request.forms
 
 
