@@ -1,13 +1,14 @@
 # xweb
 
-Web framework written in very little code.
+![[](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/v/xweb.svg)
+![[](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/pyversions/xweb.svg)
 
 ## Why use xweb
 
-1. Xweb needn't any third-party dependency.
-2. Xweb does not have any redundant code for python2.
-3. Source code is easy to understand.
-4. It is easy to write xweb's middleware. 
+- Xweb needn't any third-party dependency.
+- Xweb does not have any redundant code for python2.
+- Source code is easy to understand.
+- It is easy to write xweb's middleware. 
 
 ## Installation
 
