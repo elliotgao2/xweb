@@ -55,6 +55,10 @@ class Request:
         return self.environ.get('PATH_INFO', '')
 
     @DictProperty('storage', read_only=True)
+    def protocol(self):
+        return self.environ.get('SERVER_PROTOCOL')
+
+    @DictProperty('storage', read_only=True)
     def method(self):
         return self.environ.get('REQUEST_METHOD', 'GET').upper()
 
@@ -75,6 +79,10 @@ class Request:
     @DictProperty('storage', read_only=True)
     def hostname(self):
         return self.environ.get('REMOTE_HOST')
+
+    @DictProperty('storage', read_only=True)
+    def host(self):
+        return self.environ.get('HTTP_HOST')
 
     @DictProperty('storage', read_only=True)
     def query_string(self):

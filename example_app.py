@@ -27,6 +27,7 @@ def print_on_response2():
 
 @app.route('/')
 def hello():
+    print(request.host)
     return 'hello world!'
 
 

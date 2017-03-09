@@ -81,6 +81,8 @@ request.json
 request.ip
 request.hostname
 request.headers
+request.host
+request.protocol
 
 ```
 
