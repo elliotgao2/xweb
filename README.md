@@ -1,6 +1,6 @@
 # xweb
 
-A web framework with very few code.
+Web framework written in very little code.
 
 ## Features
 
