@@ -1,7 +1,8 @@
 # xweb
 
-![[](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/v/xweb.svg)
-![[](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/pyversions/xweb.svg)
+![[License](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/l/xweb.svg)
+![[Pypi](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/v/xweb.svg)
+![[Python](https://pypi.python.org/pypi/xweb/)](https://img.shields.io/pypi/pyversions/xweb.svg)
 
 ## Why use xweb
 
