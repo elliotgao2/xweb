@@ -171,24 +171,29 @@ app.listen(3000)
 
 ## How to contribute
 
-1. star
-2. fork
-3. add your code
-4. add test code and run test
-5. pull request
+1. Star
+2. Fork
+3. Clone
+4. Modify
+5. Test
+6. Pull request
 
 ## TODO
 
 
 ### important:
 
-1. auto-reload
-2. blueprints
+1. Auto-reload
+2. Blueprints
 
 ### normal:
 
-1. more test code
-2. more necessary request arguments
-3. more http status code
-4. more necessary middleware 
+1. More test code
+2. More necessary request arguments
+3. More http status code
+4. More necessary middleware 
+
+## contact
+
+Email：gaojiuli@gmail.com
 
