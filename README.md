@@ -2,12 +2,12 @@
 
 Web framework written in very little code.
 
-## Features
+## Why use xweb
 
-1. Without dependencies
-2. Very few code
-3. Easy to use
-4. Give up python2
+1. Xweb needn't third-party dependencies.
+2. Xweb does not have any redundant code for python2.
+3. Source code is easy to understand.
+4. It is easy to write xweb's middleware. 
 
 ## Installation
 
