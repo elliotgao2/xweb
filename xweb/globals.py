@@ -23,12 +23,17 @@ class LocalProxy:
     """
 
     def __init__(self, fun):
-        self.fun = fun
+        self.__dict__['fun'] = fun
 
     def __getattr__(self, item):
         if not hasattr(self.fun(), item):
             raise AttributeError
         return getattr(self.fun(), item)
+
+    def __setattr__(self, key, value):
+        if not hasattr(self.fun(), key):
+            raise AttributeError
+        setattr(self.fun(), key, value)
 
 
 request = LocalProxy(partial(LocalStorage.load_context, 'request'))

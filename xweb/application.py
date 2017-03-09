@@ -4,7 +4,7 @@ import threading
 from xweb.context import Context
 from xweb.descriptors import CachedProperty
 from xweb.exception import HTTPError, RouteError
-from xweb.globals import LocalStorage
+from xweb.globals import LocalStorage, response
 
 
 class XWeb:
@@ -12,6 +12,7 @@ class XWeb:
         self.request_middlewares = []
         self.route_processors = []
         self.response_middlewares = []
+        self.exception_handlers = {}
         self.identify = str(threading.current_thread().ident)
 
     def __call__(self, environ, start_response):
@@ -33,7 +34,6 @@ class XWeb:
                     match = pattern.match(ctx.request.path)
                     if match:
                         matched = True
-
                         if ctx.request.method not in methods:
                             raise HTTPError(405)
                         else:
@@ -45,13 +45,23 @@ class XWeb:
         except HTTPError as e:
             ctx.response.status = e.args[0]
             ctx.response.body = ctx.response.get_status_detail()
+            status_code = str(ctx.response.status)
+            if status_code in self.exception_handlers:
+                self.exception_handlers[str(status_code)]()
         finally:
+            print(response.body)
             status = ctx.response.get_status()
             body = ctx.response.get_body()
             header = ctx.response.get_header()
 
             start_response(status, header)
             return [body.encode('utf-8')]
+
+    def exception(self, status_code):
+        def decorator(fn):
+            self.exception_handlers[str(status_code)] = fn
+
+        return decorator
 
     @CachedProperty
     def processors(self):

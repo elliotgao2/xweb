@@ -1,5 +1,6 @@
 from xweb.application import XWeb
-from xweb.globals import request
+from xweb.exception import abort
+from xweb.globals import request, response
 
 app = XWeb()
 
@@ -49,9 +50,15 @@ def post():
     return request.forms
 
 
-@app.post('/exception')
+@app.get('/exception')
 def post():
-    return request.forms
+    abort(500)
+    return "OK"
+
+
+@app.exception(500)
+def exception():
+    response.body = "FAIL"
 
 
 app.listen(3000)
