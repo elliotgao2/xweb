@@ -27,8 +27,8 @@ def print_on_response2():
 
 @app.route('/', methods=['GET', 'POST'])
 def hello():
-    print(request.body)
-    return 'hello world!'
+    response.headers['Content-Type'] = 'text/html'
+    return '<h1>dsad</h1>'
 
 
 @app.route('/environ')
