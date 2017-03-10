@@ -44,15 +44,15 @@ class XWeb:
 
         except HTTPError as e:
             ctx.response.status = e.args[0]
-            ctx.response.body = ctx.response.get_status_detail()
+            ctx.response.body = ctx.response.status_detail
 
             status_code = str(ctx.response.status)
             if status_code in self.exception_handlers:
                 self.exception_handlers[str(status_code)]()
         finally:
-            status = ctx.response.get_status()
-            body = ctx.response.get_body()
-            header = ctx.response.get_header()
+            status = ctx.response.status_result
+            body = ctx.response.body_result
+            header = ctx.response.headers_result
             start_response(status, header)
             return [body.encode('utf-8')]
 
