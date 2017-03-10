@@ -21,7 +21,7 @@ class Response:
         return status_code.get(str(self.status))
 
     def get_status(self):
-        return str(self.status) + ' ' + status_code.get(str(self.status))
+        return str(self.status) + ' ' + self.get_status_detail()
 
     def get_header(self):
         return [(key, val) for key, val in self.headers.items()]
