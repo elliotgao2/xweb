@@ -54,7 +54,7 @@ def call_my_name(name):
 def post():
     return 'hi post!'
     
-@app.get('/:name/')
+@app.get('/get/')
 def get():
     return 'hi get!'
 
@@ -85,6 +85,7 @@ request.query
 request.files
 request.forms
 request.json
+request.post
 request.ip
 request.hostname
 request.headers
