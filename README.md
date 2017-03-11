@@ -15,7 +15,7 @@ Your life will be long.
 
 - Xweb is easy to use. 
 - Xweb has very simple api. 
-- Xweb needn't any third-party dependency.
+- Xweb did not use any third-party dependency.
 - Xweb does not have any redundant code for python2.
 - Source code is easy to understand.
 - It is easy to write xweb's middleware. 
