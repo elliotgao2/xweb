@@ -8,12 +8,8 @@
 
 ## Why use xweb
 
-Your learning costs will be very low .
-Your code will be elegant.
-Your bug will be easy to solve.
 Your life will be long.
 
-- Xweb is easy to use. 
 - Xweb has very simple api. 
 - Xweb did not use any third-party dependency.
 - Xweb does not have any redundant code for python2.
