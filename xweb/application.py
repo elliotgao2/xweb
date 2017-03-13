@@ -1,5 +1,10 @@
+import os
 import re
 import threading
+
+import time
+
+import sys
 
 from xweb.context import Context
 from xweb.descriptors import CachedProperty
@@ -126,3 +131,22 @@ class XWeb:
         server = make_server('127.0.0.1', port, self)
         print('serve on 127.0.0.1:{port}'.format(port=port))
         server.serve_forever()
+
+        # project_dir = os.getcwd()
+        # start_time = max(os.stat(root).st_ctime for root, _, _ in os.walk(project_dir))
+        # last_time = start_time
+        #
+        # while True:
+        #     time.sleep(0.5)
+        #     try:
+        #         if last_time != start_time:
+        #             start_time = last_time
+        #         else:
+        #             last_time = max(os.stat(root).st_ctime for root, _, _ in os.walk(project_dir))
+        #     except KeyboardInterrupt:
+        #         sys.exit(0)
+
+
+
+
+

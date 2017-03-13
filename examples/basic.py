@@ -27,8 +27,7 @@ def print_on_response2():
 
 @app.route('/', methods=['GET', 'POST'])
 def hello():
-    response.headers['Content-Type'] = 'text/html'
-    return '<h1>dsad</h1>'
+    return '<h1>hello world</h1>'
 
 
 @app.route('/environ')
@@ -65,6 +64,5 @@ def post():
 @app.exception(500)
 def exception():
     response.body = "FAIL"
-
 
 app.listen(3000)
