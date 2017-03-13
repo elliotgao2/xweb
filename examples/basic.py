@@ -10,11 +10,6 @@ def print_on_request1():
     print("I print when a request is received by the server1")
 
 
-@app.middleware('request')
-def print_on_request2():
-    print("I print when a request is received by the server2")
-
-
 @app.middleware('response')
 def print_on_response1():
     print("I print when a response is returned by the server1")
@@ -45,6 +40,11 @@ def forms():
     return request.forms
 
 
+@app.route('/files/', methods=['POST'])
+def files():
+    return request.files['a'].filename
+
+
 @app.route('/query/')
 def query():
     return request.query
@@ -64,5 +64,6 @@ def post():
 @app.exception(500)
 def exception():
     response.body = "FAIL"
+
 
 app.listen(3000)

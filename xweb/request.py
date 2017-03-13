@@ -52,7 +52,7 @@ class Request:
 
     @DictProperty('storage', read_only=True)
     def path(self):
-        return self.environ.get('PATH_INFO', '')
+        return self.environ.get('PATH_INFO', '').rstrip('/') + '/'
 
     @DictProperty('storage', read_only=True)
     def protocol(self):
