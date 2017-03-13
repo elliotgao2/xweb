@@ -8,7 +8,7 @@ from xweb.descriptors import DictProperty, HeaderDict
 
 class File:
     """
-    For wrap request files
+    For wrap request files, There need test case
     """
 
     def __init__(self, file, name, filename):
