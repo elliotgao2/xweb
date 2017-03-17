@@ -157,7 +157,7 @@ app.listen(3000)
 
 1. `pip install -r requirement.txt`
 
-2. `pytest`
+2. `coverage run --source=xweb -m pytest && coverage report`
 
 ## How to contribute
 
