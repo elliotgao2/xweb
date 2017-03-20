@@ -131,3 +131,27 @@ def test_post_form_multipart_form_data():
     client = webtest.TestApp(app)
     resp = client.post('/', params=payload, headers=headers)
     assert resp.json.get('test') == 'fuck'
+
+
+def test_query():
+    app = XWeb()
+
+    @app.get('/query')
+    def query():
+        return request.query
+
+    client = webtest.TestApp(app)
+    resp = client.get('/query/?a=1')
+    assert resp.json.get('a') == '1'
+
+
+def test_files():
+    app = XWeb()
+
+    @app.post('/files')
+    def files():
+        return request.files
+
+    client = webtest.TestApp(app)
+    resp = client.post('/files')
+    assert resp.text == '{}'

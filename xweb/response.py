@@ -17,24 +17,28 @@ class Response:
     def __repr__(self):
         return '<Response {}>'.format(self.status)
 
-    def get_status_detail(self):
+    @property
+    def status_detail(self):
         return status_code.get(str(self.status))
 
-    def get_status(self):
-        return str(self.status) + ' ' + status_code.get(str(self.status))
+    @property
+    def status_result(self):
+        return str(self.status) + ' ' + self.status_detail
 
-    def get_header(self):
+    @property
+    def headers_result(self):
         return [(key, val) for key, val in self.headers.items()]
 
-    def get_body(self):
+    @property
+    def body_result(self):
         if self.body is None:
             self.headers['Content-Length'] = 0
             return ''
         if isinstance(self.body, int):
-            self.headers['Content-Type'] = 'text/plain'
+            self.headers['Content-Type'] = 'text/html'
             return str(self.body)
         if isinstance(self.body, str):
-            self.headers['Content-Type'] = 'text/plain'
+            self.headers['Content-Type'] = 'text/html'
             return self.body
         if isinstance(self.body, dict):
             self.headers['Content-Type'] = 'text/json'

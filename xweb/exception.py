@@ -8,3 +8,7 @@ class RouteError(XWebException):
 
 class HTTPError(XWebException):
     """ HTTPError """
+
+
+def abort(status_code):
+    raise HTTPError(status_code)

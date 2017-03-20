@@ -8,7 +8,7 @@ from xweb.descriptors import DictProperty, HeaderDict
 
 class File:
     """
-    For wrap request files
+    For wrap request files, There need test case
     """
 
     def __init__(self, file, name, filename):
@@ -52,7 +52,11 @@ class Request:
 
     @DictProperty('storage', read_only=True)
     def path(self):
-        return self.environ.get('PATH_INFO', '')
+        return self.environ.get('PATH_INFO', '').rstrip('/') + '/'
+
+    @DictProperty('storage', read_only=True)
+    def protocol(self):
+        return self.environ.get('SERVER_PROTOCOL')
 
     @DictProperty('storage', read_only=True)
     def method(self):
@@ -77,6 +81,10 @@ class Request:
         return self.environ.get('REMOTE_HOST')
 
     @DictProperty('storage', read_only=True)
+    def host(self):
+        return self.environ.get('HTTP_HOST')
+
+    @DictProperty('storage', read_only=True)
     def query_string(self):
         return self.environ.get('QUERY_STRING')
 
@@ -99,11 +107,11 @@ class Request:
 
     @DictProperty('storage', read_only=True)
     def content_length(self):
-        return int(self.environ.get('CONTENT_LENGTH') or -1)
+        return int(self.environ.get('CONTENT_LENGTH', -1))
 
     @DictProperty('storage', read_only=True)
     def post(self):
-        result = {}
+        post = {}
 
         if self.content_type == 'application/json':
             return self.json
@@ -111,26 +119,24 @@ class Request:
         if not self.content_type.startswith('multipart/'):
             pairs = parse_qsl(self.body)
             for key, value in pairs:
-                result[key] = value
-            return result
+                post[key] = value
+            return post
+
         safe_env = {'QUERY_STRING': ''}
         for key in ('REQUEST_METHOD', 'CONTENT_TYPE', 'CONTENT_LENGTH'):
             if key in self.environ:
                 safe_env[key] = self.environ[key]
-
         data = cgi.FieldStorage(fp=self.environ['wsgi.input'], environ=safe_env, keep_blank_values=True)
-
         data = data.list or []
-
         for item in data:
             if item.filename:
-                result[item.name] = File(item.file,
-                                         item.name,
-                                         item.filename)
+                post[item.name] = File(item.file,
+                                       item.name,
+                                       item.filename)
             else:
-                result[item.name] = item.value
+                post[item.name] = item.value
 
-        return result
+        return post
 
     @DictProperty('storage', read_only=True)
     def files(self):
@@ -150,7 +156,7 @@ class Request:
 
     @DictProperty('storage', read_only=True)
     def json(self):
-        results = {}
+        result = {}
         if self.content_type == 'application/json':
-            results = json.loads(self.body)
-        return results
+            result = json.loads(self.body)
+        return result
