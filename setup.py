@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='xweb',
-      version='0.0.4',
+      version='0.0.5',
       description='Web framework for the zen of python.',
       author='gaojiuli',
       author_email='gaojiuli@gmail.com',
@@ -9,7 +9,7 @@ setup(name='xweb',
       packages=['xweb'],
       license='MIT',
       platforms='any',
-      classifiers=['Development Status :: 2 - Pre-Alpha',
+      classifiers=['Development Status :: 3 - Alpha',
                    'Intended Audience :: Developers',
                    'License :: OSI Approved :: MIT License',
                    'Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries',
