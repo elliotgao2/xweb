@@ -173,7 +173,6 @@ app.listen(3000)
 ### important:
 
 1. Auto-reload
-2. Blueprints
 
 ### normal:
 

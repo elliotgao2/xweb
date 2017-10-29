@@ -115,6 +115,9 @@ class XWeb:
     def head(self, path):
         return self.route(path, methods=['HEAD'])
 
+    def register_blueprint(self, blueprint):
+        self.route_processors += blueprint.route_processors
+
     # def run(self, port):
     #
     #     project_dir = os.getcwd()
