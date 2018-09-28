@@ -21,4 +21,4 @@ async def response_time(ctx, fn):
 
 @app.use
 async def response(ctx):
-    ctx.body = "11ddd11"
+    ctx.body = "Hello World!"

@@ -7,7 +7,9 @@ import uvloop
 from gunicorn.workers.base import Worker
 
 __version__ = '0.1.0'
-__author__ = 'gaojiuli'
+__author__ = 'Jiuli Gao'
+
+__all__ = ('Request', 'Response', 'Context', 'App', 'XWebWorker')
 
 
 class Request:

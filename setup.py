@@ -11,7 +11,7 @@ with open('xweb.py', 'rb') as f:
 
 setup(name='xweb',
       version=version,
-      description='next generation web framework for python',
+      description='Next generation web framework for python',
       author='gaojiuli',
       author_email='gaojiuli@gmail.com',
       url='https://github.com/gaojiuli/xweb',
