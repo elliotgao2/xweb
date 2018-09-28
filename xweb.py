@@ -3,9 +3,15 @@ import signal
 from functools import partial
 
 import httptools
-import uvloop
 from gunicorn.workers.base import Worker
 
+try:
+    import uvloop
+
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+except ImportError:
+    pass
 __version__ = '0.1.0'
 __author__ = 'Jiuli Gao'
 
@@ -178,7 +184,6 @@ class App:
         return await next_fn()
 
     def listen(self, port=8000):
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         loop = asyncio.get_event_loop()
         server = loop.create_server(partial(HttpProtocol, loop=loop, handler=self), port=port)
         loop.create_task(server)
