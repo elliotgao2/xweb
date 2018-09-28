@@ -13,46 +13,71 @@ __all__ = ('Request', 'Response', 'Context', 'App', 'XWebWorker')
 
 
 class Request:
-    """Todo"""
+    def __init__(self,
+                 header="",
+                 headers="",
+                 method="",
+                 url="",
+                 original_url="",
+                 origin="",
+                 href="",
+                 path="",
+                 query="",
+                 querystring="",
+                 host="",
+                 hostname="",
+                 fresh="",
+                 stale="",
+                 socket="",
+                 protocol="",
+                 secure="",
+                 ip="",
+                 ips="",
+                 ):
+        self.header = header
+        self.headers = headers
+        self.method = method
+        self.url = url
+        self.original_url = original_url
+        self.origin = origin
+        self.href = href
+        self.path = path
+        self.query = query
+        self.querystring = querystring
+        self.host = host
+        self.hostname = hostname
+        self.fresh = fresh
+        self.stale = stale
+        self.socket = socket
+        self.protocol = protocol
+        self.secure = secure
+        self.ip = ip
+        self.ips = ips
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 
 class Response:
-    """Todo"""
+    def __init__(self,
+                 body="",
+                 status="",
+                 message="",
+                 header_sent="",
+                 ):
+        self.body = body
+        self.status = status
+        self.message = message
+        self.header_sent = header_sent
 
-    def __init__(self):
-        pass
+    def __getitem__(self, item):
+        return getattr(self, item)
 
-    def get(self, key):
-        return getattr(self, key)
-
-
-class Context:
-    """Todo
-    req
-    res
-    app
-    throw
-    assert
-    respond
-    """
-
-    def __init__(self):
-        self.body = "a"
-        self.req = Request()
-        self.res = Response()
-
-    def set(self, key, value):
-        print(1111)
-        setattr(self.res, key, value)
-
-    def respond(self):
-        pass
-
-    def throw(self):
-        pass
-
-    def assert_true(self):
-        pass
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 
 class HttpProtocol(asyncio.Protocol):
@@ -63,7 +88,8 @@ class HttpProtocol(asyncio.Protocol):
         self.handler = app.callable
         self.loop = loop
         self.headers = {}
-        self.ctx = Context()
+        self.req = Request()
+        self.res = Response()
 
     def connection_made(self, transport):
         self.parser = httptools.HttpRequestParser(self)
@@ -76,14 +102,14 @@ class HttpProtocol(asyncio.Protocol):
         self.headers[name.decode()] = value.decode()
 
     def on_body(self, body):
-        self.body = body
+        self.req.body = body
 
     def on_message_complete(self):
-        task = self.loop.create_task(self.handler(self.ctx))
+        task = self.loop.create_task(self.handler(self.req, self.res))
         task.add_done_callback(self.done_callback)
 
     def done_callback(self, future):
-        body = self.ctx.body
+        body = self.res.body
         response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()
         self.transport.write(response)
 
@@ -137,14 +163,14 @@ class App:
     def use(self, fn):
         self.handlers.append(fn)
 
-    async def __call__(self, ctx):
+    async def __call__(self, req, res):
         next_fn = None
         handlers = []
         for handler in self.handlers[::-1]:
             if next_fn is not None:
-                handler = partial(handler, ctx=ctx, fn=next_fn)
+                handler = partial(handler, req=req, res=res, fn=next_fn)
                 handlers.append(handler)
             else:
-                self.handle = partial(handler, ctx=ctx)
+                self.handle = partial(handler, req=req, res=res)
             next_fn = handler
         return await self.handle()

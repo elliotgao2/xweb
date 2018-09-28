@@ -6,19 +6,20 @@ app = App()
 
 
 @app.use
-async def logger(ctx, fn):
+async def logger(req, res, fn):
     await fn()
-    rt = getattr(ctx, 'X-Response-Time')
+    rt = res['X-Response-Time']
+    print(rt)
 
 
 @app.use
-async def response_time(ctx, fn):
+async def response_time(req, res, fn):
     start = time.time()
     await fn()
     s = time.time() - start
-    setattr(ctx, 'X-Response-Time', f'{s:.2f}s')
+    res['X-Response-Time'] = f'{s:.2f}s'
 
 
 @app.use
-async def response(ctx):
-    ctx.body = "Hello World!"
+async def response(req, res):
+    res.body = "Hello World!"
