@@ -1,3 +1,3 @@
-from .application import XWeb
+from .application import App
 
-__all__ = ('XWeb',)
+__all__ = ('App',)
