@@ -6,15 +6,17 @@ import httptools
 import uvloop
 from gunicorn.workers.base import Worker
 
-data = "111"
-response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(data)}\r\n\r\n{data}".encode()
+__version__ = '0.1.0'
+__author__ = 'gaojiuli'
 
 
 class Request:
-    pass
+    """Todo"""
 
 
 class Response:
+    """Todo"""
+
     def __init__(self):
         pass
 
@@ -23,7 +25,7 @@ class Response:
 
 
 class Context:
-    """
+    """Todo
     req
     res
     app
@@ -125,7 +127,7 @@ class XWebWorker(Worker):
         signal.siginterrupt(signal.SIGUSR1, False)
 
 
-class XWeb:
+class App:
     def __init__(self):
         self.handlers = []
         self.handle = None
