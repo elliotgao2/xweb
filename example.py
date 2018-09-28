@@ -1,28 +1,27 @@
-import time
-
 from xweb import App
 
 app = App()
+import ujson as json
 
 
 @app.use
-async def logger(req, res, fn):
+async def logger(ctx, fn):
     await fn()
-    rt = res['X-Response-Time']
-    print(rt)
+    # rt = ctx['X-Response-Time']
+    # print(rt)
 
 
 @app.use
-async def response_time(req, res, fn):
-    start = time.time()
+async def response_time(ctx, fn):
+    # start = time.time()
     await fn()
-    s = time.time() - start
-    res['X-Response-Time'] = f'{s:.2f}s'
+    # s = (time.time() - start) * 1000
+    # ctx['X-Response-Time'] = f'{s:.0f}ms'
 
 
 @app.use
-async def response(req, res):
-    res.body = "Hello World!"
+async def response(ctx):
+    ctx.body = json.dumps({"Hello World": 1})
 
 
 if __name__ == '__main__':

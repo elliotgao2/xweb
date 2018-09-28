@@ -7,7 +7,7 @@ _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
 with open('xweb.py', 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(
-            f.read().decode('utf-8')).group(1)))
+        f.read().decode('utf-8')).group(1)))
 
 setup(name='xweb',
       version=version,
@@ -15,7 +15,7 @@ setup(name='xweb',
       author='gaojiuli',
       author_email='gaojiuli@gmail.com',
       url='https://github.com/gaojiuli/xweb',
-      packages=['xweb'],
+      py_modules=['xweb'],
       install_requires=[
           'asyncio',
           'ujson',

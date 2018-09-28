@@ -80,16 +80,23 @@ class Response:
         setattr(self, key, value)
 
 
+class Context:
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+
 class HttpProtocol(asyncio.Protocol):
 
-    def __init__(self, app, loop):
+    def __init__(self, handler, loop):
         self.parser = None
         self.transport = None
-        self.handler = app
+        self.handler = handler
         self.loop = loop
         self.headers = {}
-        self.req = Request()
-        self.res = Response()
+        self.ctx = Context()
 
     def connection_made(self, transport):
         self.parser = httptools.HttpRequestParser(self)
@@ -102,14 +109,14 @@ class HttpProtocol(asyncio.Protocol):
         self.headers[name.decode()] = value.decode()
 
     def on_body(self, body):
-        self.req.body = body
+        self.ctx.body = body
 
     def on_message_complete(self):
-        task = self.loop.create_task(self.handler(self.req, self.res))
+        task = self.loop.create_task(self.handler(self.ctx))
         task.add_done_callback(self.done_callback)
 
     def done_callback(self, future):
-        body = self.res.body
+        body = self.ctx.body
         response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()
         self.transport.write(response)
 
@@ -130,12 +137,11 @@ class XWebWorker(Worker):
 
     def run(self):
         loop = asyncio.get_event_loop()
-        [loop.create_task(loop.create_server(partial(HttpProtocol, loop=loop, app=self.app.callable), sock=sock))
+        [loop.create_task(loop.create_server(partial(HttpProtocol, loop=loop, handler=self.app.callable), sock=sock))
          for sock in self.sockets]
         loop.run_forever()
 
     def init_process(self):
-        asyncio.get_event_loop().close()
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         super().init_process()
 
@@ -158,29 +164,23 @@ class XWebWorker(Worker):
 class App:
     def __init__(self):
         self.handlers = []
-        self.handle = None
 
     def use(self, fn):
         self.handlers.append(fn)
 
-    async def __call__(self, req, res):
+    async def __call__(self, ctx):
         next_fn = None
-        handlers = []
         for handler in self.handlers[::-1]:
             if next_fn is not None:
-                handler = partial(handler, req=req, res=res, fn=next_fn)
-                handlers.append(handler)
+                next_fn = partial(handler, ctx=ctx, fn=next_fn)
             else:
-                self.handle = partial(handler, req=req, res=res)
-            next_fn = handler
-        return await self.handle()
+                next_fn = partial(handler, ctx=ctx)
+        return await next_fn()
 
     def listen(self, port=8000):
-        asyncio.get_event_loop().close()
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
         loop = asyncio.get_event_loop()
-        server = loop.create_server(partial(HttpProtocol, loop=loop, app=self), port=port)
+        server = loop.create_server(partial(HttpProtocol, loop=loop, handler=self), port=port)
         loop.create_task(server)
         try:
             print('Listen')
