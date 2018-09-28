@@ -1,3 +1,3 @@
-from .application import App
+from .application import App, HttpProtocol
 
-__all__ = ('App',)
+__all__ = ('App', 'HttpProtocol')

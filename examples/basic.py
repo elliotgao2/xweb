@@ -6,4 +6,4 @@ app = App()
 #
 #
 # app.add_route('/', home)
-app.run(debug=True, ip='0.0.0.0')
+app.run(ip='0.0.0.0')

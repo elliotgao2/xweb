@@ -1,13 +1,12 @@
 import asyncio
-import logging
 import ujson as json
 from http import HTTPStatus
 
 import httptools
+import uvloop
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
 data = json.dumps({"b": 1})
 response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(data)}\r\n\r\n{data}".encode()
 
@@ -15,9 +14,13 @@ response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len
 class Response:
     def __init__(self, body=None, headers=None, status_code=HTTPStatus.OK):
         self.status_code = status_code
+        self.body = body
         if self.status_code.value >= 300:
             self.body = body or self.status_code.phrase
-        base_header = {'Content-Type': 'text/plain', "Content-Length": len(self.body)}
+        base_header = {'Content-Type': 'text/plain',
+                       "Connection": "keep-alive",
+                       "Server": "xweb",
+                       "Content-Length": len(self.body)}
         self.headers = headers and base_header.update(base_header) or base_header
 
     def __str__(self):
@@ -31,6 +34,7 @@ class Response:
 
 response_404 = Response(status_code=HTTPStatus.NOT_FOUND).to_bytes()
 response_500 = Response(status_code=HTTPStatus.INTERNAL_SERVER_ERROR).to_bytes()
+response_hello = Response(body="Hellow").to_bytes()
 
 
 class Request:
@@ -45,36 +49,37 @@ class Request:
         self.ip = ''
 
 
-class ServerProtocol(asyncio.Protocol):
+class HttpProtocol(asyncio.Protocol):
     route = {}
 
     def __init__(self):
         self.parser = None
         self.transport = None
-        self.request = Request()
+        # self.request = Request()
 
     def connection_made(self, transport):
         self.parser = httptools.HttpRequestParser(self)
         self.transport = transport
-        addr = transport.get_extra_info('peername')
-        self.request.ip = addr[0]
+        # addr = transport.get_extra_info('peername')
+        # self.request.ip = addr[0]
 
     def on_body(self, body):
-        self.request.body = body
+        self.body = body
 
-    def on_header(self, name, value):
-        self.request.headers[name] = value
+    #
+    # def on_header(self, name, value):
+    #     self.request.headers[name] = value
 
     def on_message_complete(self):
-        logging.info(f'{self.request.ip} {self.request.method} {self.request.url}')
-        self.transport.write(response_404)
+        # logging.info(f'{self.request.ip} {self.request.method} {self.request.url}')
+        self.transport.write(response)
 
-    def on_url(self, url):
-        parsed_url = httptools.parse_url(url)
-        self.request.url = url
-        self.request.path = parsed_url.path
-        self.request.query = parsed_url.query
-        self.request.method = self.parser.get_method()
+    # def on_url(self, url):
+    #     parsed_url = httptools.parse_url(url)
+    #     self.request.url = url
+    #     self.request.path = parsed_url.path
+    #     self.request.query = parsed_url.query
+    #     self.request.method = self.parser.get_method()
 
     def data_received(self, data):
         self.parser.feed_data(data)
@@ -88,21 +93,18 @@ class ServerProtocol(asyncio.Protocol):
 
 class App:
     def add_route(self, path, handler):
-        ServerProtocol.route[path.encode()] = handler
+        HttpProtocol.route[path.encode()] = handler
 
-    def run(self, ip: str = "127.0.0.1", port: int = 8888, debug=False):
-        logger.setLevel(debug and logging.DEBUG or logging.ERROR)
+    def run(self, ip: str = "127.0.0.1", port: int = 8000, debug=False):
         loop = asyncio.get_event_loop()
-        ServerProtocol.ip = ip
-        ServerProtocol.port = port
-        coro = loop.create_server(ServerProtocol, ip, port)
+        coro = loop.create_server(HttpProtocol, ip, port)
         server = loop.run_until_complete(coro)
-        logger.info(f"Serving on http://{ip}:{port}")
+        print(f"Serving on http://{ip}:{port}")
         try:
             loop.run_forever()
         except KeyboardInterrupt:
             print('', end='\r')
-            logger.info(f"Server closing!")
+            print(f"Server closed!")
 
         server.close()
         loop.run_until_complete(server.wait_closed())
