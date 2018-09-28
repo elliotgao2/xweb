@@ -23,3 +23,7 @@ async def response_time(req, res, fn):
 @app.use
 async def response(req, res):
     res.body = "Hello World!"
+
+
+if __name__ == '__main__':
+    app.listen(8000)

@@ -9,7 +9,7 @@ from gunicorn.workers.base import Worker
 __version__ = '0.1.0'
 __author__ = 'Jiuli Gao'
 
-__all__ = ('Request', 'Response', 'Context', 'App', 'XWebWorker')
+__all__ = ('Request', 'Response', 'App', 'XWebWorker')
 
 
 class Request:
@@ -85,7 +85,7 @@ class HttpProtocol(asyncio.Protocol):
     def __init__(self, app, loop):
         self.parser = None
         self.transport = None
-        self.handler = app.callable
+        self.handler = app
         self.loop = loop
         self.headers = {}
         self.req = Request()
@@ -130,7 +130,7 @@ class XWebWorker(Worker):
 
     def run(self):
         loop = asyncio.get_event_loop()
-        [loop.create_task(loop.create_server(partial(HttpProtocol, loop=loop, app=self.app), sock=sock))
+        [loop.create_task(loop.create_server(partial(HttpProtocol, loop=loop, app=self.app.callable), sock=sock))
          for sock in self.sockets]
         loop.run_forever()
 
@@ -174,3 +174,19 @@ class App:
                 self.handle = partial(handler, req=req, res=res)
             next_fn = handler
         return await self.handle()
+
+    def listen(self, port=8000):
+        asyncio.get_event_loop().close()
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
+        loop = asyncio.get_event_loop()
+        server = loop.create_server(partial(HttpProtocol, loop=loop, app=self), port=port)
+        loop.create_task(server)
+        try:
+            print('Listen')
+            loop.run_forever()
+        except KeyboardInterrupt:
+            print('\r', end='\r')
+            print('Stoped')
+        server.close()
+        loop.close()
