@@ -1,6 +1,6 @@
 import asyncio
-import signal
 from functools import partial
+from http import HTTPStatus
 
 import httptools
 from gunicorn.workers.base import Worker
@@ -15,50 +15,38 @@ except ImportError:
 __version__ = '0.1.0'
 __author__ = 'Jiuli Gao'
 
-__all__ = ('Request', 'Response', 'App', 'XWebWorker')
+__all__ = ('Request', 'Response', 'App', 'XWebWorker', 'HTTPException')
+
+
+class HTTPException(Exception):
+    """HTTPException"""
+
+    def __init__(self, status, msg, properties):
+        self.properties = properties
+        self.msg = msg
+        self.status = status
 
 
 class Request:
     def __init__(self,
-                 header="",
-                 headers="",
                  method="",
                  url="",
-                 original_url="",
-                 origin="",
                  href="",
                  path="",
-                 query="",
                  querystring="",
                  host="",
-                 hostname="",
-                 fresh="",
-                 stale="",
-                 socket="",
-                 protocol="",
-                 secure="",
+                 raw="",
                  ip="",
-                 ips="",
                  ):
-        self.header = header
-        self.headers = headers
+        self.headers = {}
         self.method = method
         self.url = url
-        self.original_url = original_url
-        self.origin = origin
         self.href = href
         self.path = path
-        self.query = query
         self.querystring = querystring
         self.host = host
-        self.hostname = hostname
-        self.fresh = fresh
-        self.stale = stale
-        self.socket = socket
-        self.protocol = protocol
-        self.secure = secure
+        self.raw = raw
         self.ip = ip
-        self.ips = ips
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -70,7 +58,7 @@ class Request:
 class Response:
     def __init__(self,
                  body="",
-                 status="",
+                 status=200,
                  message="",
                  header_sent="",
                  ):
@@ -85,46 +73,70 @@ class Response:
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
+    def __bytes__(self):
+        http_status = HTTPStatus(self.status)
+        length = len(self.body)
+        return f"HTTP/1.1 {http_status.value} {http_status.phrase}\r\nContent-Type: text/plain\r\nContent-Length: {length}\r\n\r\n{self.body}".encode()
+
 
 class Context:
+    def __init__(self):
+        self.req = Request()
+        self.res = Response()
+
+    def __getattr__(self, name):
+        return getattr(self.req, name)
+
     def __getitem__(self, item):
         return getattr(self, item)
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
+    def check(self, value, status=500, msg='', properties=None):
+        if not value:
+            self.abort(status=status, msg=msg, properties=properties)
 
-class HttpProtocol(asyncio.Protocol):
+    def abort(self, status, msg, properties):
+        raise HTTPException(status=status, msg=msg, properties=properties)
+
+
+class HTTPProtocol(asyncio.Protocol):
 
     def __init__(self, handler, loop):
         self.parser = None
         self.transport = None
         self.handler = handler
         self.loop = loop
-        self.headers = {}
         self.ctx = Context()
 
     def connection_made(self, transport):
         self.parser = httptools.HttpRequestParser(self)
         self.transport = transport
+        client = transport.get_extra_info('peername')
+        self.ctx.req.ip = client[0]
 
     def on_url(self, url):
-        httptools.parse_url(url)
+        self.ctx.req.method = self.parser.get_method()
+        parsed_url = httptools.parse_url(url)
+        self.ctx.req.url = url
+        self.ctx.req.host = parsed_url.host
+        self.ctx.req.path = parsed_url.path
+        self.ctx.req.port = parsed_url.port
+        self.ctx.req.querystring = parsed_url.query
 
     def on_header(self, name, value):
-        self.headers[name.decode()] = value.decode()
+        self.ctx.req.headers[name] = value
 
     def on_body(self, body):
-        self.ctx.body = body
+        self.ctx.req.raw = body
 
     def on_message_complete(self):
         task = self.loop.create_task(self.handler(self.ctx))
         task.add_done_callback(self.done_callback)
 
     def done_callback(self, future):
-        body = self.ctx.body
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {len(body)}\r\n\r\n{body}".encode()
-        self.transport.write(response)
+        self.transport.write(bytes(self.ctx.res))
 
     def data_received(self, data):
         self.parser.feed_data(data)
@@ -138,33 +150,14 @@ class HttpProtocol(asyncio.Protocol):
 
 class XWebWorker(Worker):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def run(self):
-        loop = asyncio.get_event_loop()
-        [loop.create_task(loop.create_server(partial(HttpProtocol, loop=loop, handler=self.app.callable), sock=sock))
-         for sock in self.sockets]
-        loop.run_forever()
-
-    def init_process(self):
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-        super().init_process()
-
-    def init_signals(self):
-        # Set up signals through the event loop API.
         loop = asyncio.get_event_loop()
-        loop.add_signal_handler(signal.SIGQUIT, self.handle_quit, signal.SIGQUIT, None)
-        loop.add_signal_handler(signal.SIGTERM, self.handle_exit, signal.SIGTERM, None)
-        loop.add_signal_handler(signal.SIGINT, self.handle_quit, signal.SIGINT, None)
-        loop.add_signal_handler(signal.SIGWINCH, self.handle_winch, signal.SIGWINCH, None)
-        loop.add_signal_handler(signal.SIGUSR1, self.handle_usr1, signal.SIGUSR1, None)
-        loop.add_signal_handler(signal.SIGABRT, self.handle_abort, signal.SIGABRT, None)
-
-        # Don't let SIGTERM and SIGUSR1 disturb active requests
-        # by interrupting system calls
-        signal.siginterrupt(signal.SIGTERM, False)
-        signal.siginterrupt(signal.SIGUSR1, False)
+        for sock in self.sockets:
+            protocol = partial(HTTPProtocol, loop=loop, handler=self.app.callable)
+            server = loop.create_server(protocol, sock=sock)
+            loop.create_task(server)
+        loop.run_forever()
 
 
 class App:
@@ -181,17 +174,22 @@ class App:
                 next_fn = partial(handler, ctx=ctx, fn=next_fn)
             else:
                 next_fn = partial(handler, ctx=ctx)
-        return await next_fn()
+        try:
+            await next_fn()
+        except HTTPException as e:
+            ctx.res.body = e.msg
+            ctx.res.status = e.status
 
-    def listen(self, port=8000):
+    def listen(self, port=8000, host="127.0.0.1"):
         loop = asyncio.get_event_loop()
-        server = loop.create_server(partial(HttpProtocol, loop=loop, handler=self), port=port)
+        protocol = partial(HTTPProtocol, loop=loop, handler=self)
+        server = loop.create_server(protocol, host=host, port=port)
         loop.create_task(server)
         try:
-            print('Listen')
+            print(f'Listen http://{host}:{port}')
             loop.run_forever()
         except KeyboardInterrupt:
             print('\r', end='\r')
-            print('Stoped')
+            print('Stopped')
         server.close()
         loop.close()
