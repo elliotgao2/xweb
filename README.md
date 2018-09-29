@@ -112,9 +112,20 @@ if __name__ == '__main__':
 - ctx.res.msg str
 - ctx.res.headers dict
 
-## Dev
 
-`python app.py`
+
+## Benchmark
+
+- Benchmark code in benchmarks/.
+- environment: `iMac (Retina 4K, 21.5-inch, 2017)`, `3 GHz Intel Core i5`, `8 GB 2400 MHz DDR4`
+- test command: `wrk http://127.0.0.1:8000/ -c 100 -t 10 -d 10 -T 10`
+
+Frameworks| Requests/Sec | Version
+-----|-----|-----
+xweb|90000|0.1.0
+vibora|90000|0.0.6
+meinheld + wsgi|77000|0.6.1
+sanic|50000|0.7.0
 
 ## Deploy
 

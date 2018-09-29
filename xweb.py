@@ -49,7 +49,7 @@ class Request:
 
 class Response:
     def __init__(self):
-        self.body = ""
+        self.body = "Hello Xweb!"
         self.status = 200
         self.msg = ""
         self.headers = {
@@ -80,7 +80,7 @@ class Context:
         self.write = None
 
     def send(self, *args):
-        logger.debug(f'{self.req.ip} {self.req.url} {self.res.status} {self.res.msg}')
+        # logger.debug(f'{self.req.ip} {self.req.url} {self.res.status} {self.res.msg}')
         self.write(bytes(self.res))
 
     def check(self, value, status=400, msg='', properties=""):
@@ -135,9 +135,6 @@ class HTTPProtocol(asyncio.Protocol):
     def connection_lost(self, exc):
         self.transport.close()
 
-    def eof_received(self):
-        self.transport.close()
-
 
 class XWebWorker(Worker):
 
@@ -159,6 +156,8 @@ class App:
         self.handlers.append(fn)
 
     async def __call__(self, ctx):
+        if not self.handlers:
+            return
         next_fn = None
         for handler in self.handlers[::-1]:
             if next_fn is not None:
