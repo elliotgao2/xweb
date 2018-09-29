@@ -12,13 +12,13 @@ In Xweb, everything is asynchronous.
 
 ## Features
 
-1. High performance.
-2. Asynchronous.
-3. Small.
+-  High performance.
+-  Asynchronous.
+-  Small.
 
 ## Requirements
 
-1. Python3.6+
+- Python3.6+
 
 ## Installation
 
