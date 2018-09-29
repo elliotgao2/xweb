@@ -16,8 +16,8 @@ async def logger(ctx, fn):
 async def response_time(ctx, fn):
     start = time.time()
     await fn()
-    s = (time.time() - start) * 1000_000
-    ctx['X-Response-Time'] = f'{s:.0f}µs'
+    usage = (time.time() - start) * 1000_000
+    ctx['X-Response-Time'] = f'{usage:.0f}µs'
 
 
 @app.use

@@ -1,4 +1,7 @@
-from xweb import Context, Request, Response
+"""
+Todo: add test case.
+"""
+from xweb import App, Context, Request, Response
 
 
 def test_response():
@@ -11,3 +14,7 @@ def test_request():
 
 def test_context():
     assert Context()
+
+
+def test_app():
+    assert App()

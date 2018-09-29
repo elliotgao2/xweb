@@ -35,8 +35,8 @@ class HTTPException(Exception):
 class Request:
     def __init__(self):
         self.headers = {}
-        self.method = b"HEAD"
-        self.url = b"/"
+        self.method = "HEAD"
+        self.url = "/"
         self.raw = None
         self.ip = None
 
@@ -80,7 +80,7 @@ class Context:
         self.write = None
 
     def send(self, *args):
-        logger.debug(f'{self.req.ip} {self.req.url.decode()} {self.res.status} {self.res.msg}')
+        logger.debug(f'{self.req.ip} {self.req.url} {self.res.status} {self.res.msg}')
         self.write(bytes(self.res))
 
     def check(self, value, status=400, msg='', properties=""):
@@ -117,10 +117,10 @@ class HTTPProtocol(asyncio.Protocol):
         self.ctx.write = self.transport.write
 
     def on_url(self, url):
-        self.ctx.req.url = url
+        self.ctx.req.url = url.decode()
 
     def on_header(self, name, value):
-        self.ctx.req.headers[name] = value
+        self.ctx.req.headers[name.decode()] = value.decode()
 
     def on_body(self, body):
         self.ctx.req.raw = body

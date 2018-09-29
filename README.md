@@ -12,8 +12,9 @@ In Xweb, everything is asynchronous.
 
 ## Features
 
-1. High performarce
-2.
+1. High performance.
+2. Asynchronous.
+3. Small.
 
 ## Requirements
 
@@ -24,6 +25,26 @@ In Xweb, everything is asynchronous.
 `pip install xweb`
 
 ## Get Started
+
+### Hello World
+
+```python
+from xweb import App
+
+app = App()
+
+@app.use
+async def response(ctx):
+    ctx.res.body = "Hello World"
+
+
+if __name__ == '__main__':
+    app.listen(8000)
+```
+
+### Example with middleware.
+
+A middleware is an async function or an async callable object which looks like: `async def logger(ctx, fn)`
 
 ```python
 # app.py
@@ -46,8 +67,8 @@ async def logger(ctx, fn):
 async def response_time(ctx, fn):
     start = time.time()
     await fn()
-    s = (time.time() - start) * 1000_000
-    ctx['X-Response-Time'] = f'{s:.0f}µs'
+    usage = (time.time() - start) * 1000_000
+    ctx['X-Response-Time'] = f'{usage:.0f}µs'
 
 
 @app.use
@@ -58,6 +79,11 @@ async def response(ctx):
 if __name__ == '__main__':
     app.listen(8000)
 ```
+
+## App
+
+- app.use(fn)
+- app.listen(host='127.0.0.1', port=8000, debug=True)
 
 ## Context
 
@@ -99,3 +125,19 @@ if __name__ == '__main__':
 1. `pip install -r requirement.txt`
 2. `pytest --cov xweb.py`
 
+## Contributing
+
+
+### Build Middleware.
+
+XWeb is inspired by [koajs](https://koajs.com/). I need some help for writing middleware as in koa. For example:
+
+1. Body parser. Convert the raw bytes body into dict or file.
+2. Data validator. Async data validator with high performance.
+3. Router. High performance router like koa-router.
+4. etc..
+
+### Open issue.
+
+1. Suggestion.
+2. Bug.
