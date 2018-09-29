@@ -1,4 +1,5 @@
 import asyncio
+from email.utils import formatdate
 from functools import partial
 from http import HTTPStatus
 
@@ -12,15 +13,13 @@ try:
 
 except ImportError:
     pass
+
 __version__ = '0.1.0'
 __author__ = 'Jiuli Gao'
-
-__all__ = ('Request', 'Response', 'App', 'XWebWorker', 'HTTPException')
+__all__ = ('Request', 'Response', 'App', 'XWebWorker', 'HTTPException', 'Context')
 
 
 class HTTPException(Exception):
-    """HTTPException"""
-
     def __init__(self, status, msg, properties):
         self.properties = properties
         self.msg = msg
@@ -28,25 +27,12 @@ class HTTPException(Exception):
 
 
 class Request:
-    def __init__(self,
-                 method="",
-                 url="",
-                 href="",
-                 path="",
-                 querystring="",
-                 host="",
-                 raw="",
-                 ip="",
-                 ):
+    def __init__(self):
         self.headers = {}
-        self.method = method
-        self.url = url
-        self.href = href
-        self.path = path
-        self.querystring = querystring
-        self.host = host
-        self.raw = raw
-        self.ip = ip
+        self.method = b"HEAD"
+        self.url = b"/"
+        self.raw = None
+        self.ip = None
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -56,16 +42,18 @@ class Request:
 
 
 class Response:
-    def __init__(self,
-                 body="",
-                 status=200,
-                 message="",
-                 header_sent="",
-                 ):
-        self.body = body
-        self.status = status
-        self.message = message
-        self.header_sent = header_sent
+    def __init__(self):
+        self.body = ""
+        self.status = 200
+        self.message = None
+        self.write = None
+        self.headers = {
+            'Date': formatdate(timeval=None, localtime=False, usegmt=True),
+            'Content-Type': 'text/plain'
+        }
+
+    def send(self, *args):
+        self.write(bytes(self))
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -75,14 +63,24 @@ class Response:
 
     def __bytes__(self):
         http_status = HTTPStatus(self.status)
-        length = len(self.body)
-        return f"HTTP/1.1 {http_status.value} {http_status.phrase}\r\nContent-Type: text/plain\r\nContent-Length: {length}\r\n\r\n{self.body}".encode()
+        http_status_raw = f"HTTP/1.1 {http_status.value} {http_status.phrase}\r\n".encode()
+        http_body_raw = self.body.encode()
+        self.headers['Content-Length'] = len(http_body_raw)
+        http_header_raw = "".join([f'{k}: {v}\r\n' for k, v in self.headers.items()]).encode() + b'\r\n'
+        return http_status_raw + http_header_raw + http_body_raw
 
 
 class Context:
     def __init__(self):
         self.req = Request()
         self.res = Response()
+
+    def check(self, value, status=500, msg='', properties=None):
+        if not value:
+            self.abort(status=status, msg=msg, properties=properties)
+
+    def abort(self, status, msg, properties):
+        raise HTTPException(status=status, msg=msg, properties=properties)
 
     def __getattr__(self, name):
         return getattr(self.req, name)
@@ -92,13 +90,6 @@ class Context:
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
-
-    def check(self, value, status=500, msg='', properties=None):
-        if not value:
-            self.abort(status=status, msg=msg, properties=properties)
-
-    def abort(self, status, msg, properties):
-        raise HTTPException(status=status, msg=msg, properties=properties)
 
 
 class HTTPProtocol(asyncio.Protocol):
@@ -115,15 +106,10 @@ class HTTPProtocol(asyncio.Protocol):
         self.transport = transport
         client = transport.get_extra_info('peername')
         self.ctx.req.ip = client[0]
+        self.ctx.res.write = self.transport.write
 
     def on_url(self, url):
-        self.ctx.req.method = self.parser.get_method()
-        parsed_url = httptools.parse_url(url)
         self.ctx.req.url = url
-        self.ctx.req.host = parsed_url.host
-        self.ctx.req.path = parsed_url.path
-        self.ctx.req.port = parsed_url.port
-        self.ctx.req.querystring = parsed_url.query
 
     def on_header(self, name, value):
         self.ctx.req.headers[name] = value
@@ -133,25 +119,21 @@ class HTTPProtocol(asyncio.Protocol):
 
     def on_message_complete(self):
         task = self.loop.create_task(self.handler(self.ctx))
-        task.add_done_callback(self.done_callback)
-
-    def done_callback(self, future):
-        self.transport.write(bytes(self.ctx.res))
+        task.add_done_callback(self.ctx.res.send)
 
     def data_received(self, data):
         self.parser.feed_data(data)
 
-    def eof_received(self):
+    def connection_lost(self, exc):
         self.transport.close()
 
-    def connection_lost(self, exc):
+    def eof_received(self):
         self.transport.close()
 
 
 class XWebWorker(Worker):
 
     def run(self):
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         loop = asyncio.get_event_loop()
         for sock in self.sockets:
             protocol = partial(HTTPProtocol, loop=loop, handler=self.app.callable)

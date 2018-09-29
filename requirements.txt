@@ -1,1 +1,4 @@
+uvloop
+gunicorn
+httptools
 pytest
