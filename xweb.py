@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from email.utils import formatdate
 from functools import partial
 from http import HTTPStatus
@@ -17,6 +18,11 @@ except ImportError:
 __version__ = '0.1.0'
 __author__ = 'Jiuli Gao'
 __all__ = ('Request', 'Response', 'App', 'XWebWorker', 'HTTPException', 'Context')
+
+FORMAT = '[%(asctime)-15s] %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger('xweb')
+logger.setLevel(logging.DEBUG)
 
 
 class HTTPException(Exception):
@@ -45,15 +51,11 @@ class Response:
     def __init__(self):
         self.body = ""
         self.status = 200
-        self.message = None
-        self.write = None
+        self.msg = ""
         self.headers = {
             'Date': formatdate(timeval=None, localtime=False, usegmt=True),
             'Content-Type': 'text/plain'
         }
-
-    def send(self, *args):
-        self.write(bytes(self))
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -67,6 +69,7 @@ class Response:
         http_body_raw = self.body.encode()
         self.headers['Content-Length'] = len(http_body_raw)
         http_header_raw = "".join([f'{k}: {v}\r\n' for k, v in self.headers.items()]).encode() + b'\r\n'
+
         return http_status_raw + http_header_raw + http_body_raw
 
 
@@ -74,12 +77,17 @@ class Context:
     def __init__(self):
         self.req = Request()
         self.res = Response()
+        self.write = None
 
-    def check(self, value, status=500, msg='', properties=None):
+    def send(self, *args):
+        logger.debug(f'{self.req.ip} {self.req.url.decode()} {self.res.status} {self.res.msg}')
+        self.write(bytes(self.res))
+
+    def check(self, value, status=400, msg='', properties=""):
         if not value:
             self.abort(status=status, msg=msg, properties=properties)
 
-    def abort(self, status, msg, properties):
+    def abort(self, status, msg="", properties=""):
         raise HTTPException(status=status, msg=msg, properties=properties)
 
     def __getattr__(self, name):
@@ -106,7 +114,7 @@ class HTTPProtocol(asyncio.Protocol):
         self.transport = transport
         client = transport.get_extra_info('peername')
         self.ctx.req.ip = client[0]
-        self.ctx.res.write = self.transport.write
+        self.ctx.write = self.transport.write
 
     def on_url(self, url):
         self.ctx.req.url = url
@@ -119,7 +127,7 @@ class HTTPProtocol(asyncio.Protocol):
 
     def on_message_complete(self):
         task = self.loop.create_task(self.handler(self.ctx))
-        task.add_done_callback(self.ctx.res.send)
+        task.add_done_callback(self.ctx.send)
 
     def data_received(self, data):
         self.parser.feed_data(data)
@@ -145,6 +153,7 @@ class XWebWorker(Worker):
 class App:
     def __init__(self):
         self.handlers = []
+        self.debug = True
 
     def use(self, fn):
         self.handlers.append(fn)
@@ -159,19 +168,22 @@ class App:
         try:
             await next_fn()
         except HTTPException as e:
-            ctx.res.body = e.msg
             ctx.res.status = e.status
+            ctx.res.body = e.msg or HTTPStatus(e.status).phrase
+            ctx.res.msg = e.properties
 
-    def listen(self, port=8000, host="127.0.0.1"):
+    def listen(self, port=8000, host="127.0.0.1", debug=True):
+        self.debug = debug
+        logger.setLevel(self.debug)
         loop = asyncio.get_event_loop()
         protocol = partial(HTTPProtocol, loop=loop, handler=self)
         server = loop.create_server(protocol, host=host, port=port)
         loop.create_task(server)
         try:
-            print(f'Listen http://{host}:{port}')
+            print(f'Serving at http://{host}:{port}/')
             loop.run_forever()
         except KeyboardInterrupt:
             print('\r', end='\r')
-            print('Stopped')
+            print('Server stopped!')
         server.close()
         loop.close()
