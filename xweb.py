@@ -17,14 +17,14 @@ try:
 except ImportError:
     pass
 
-__version__ = '0.1.1'
-__author__ = 'Jiuli Gao'
-__all__ = ('Request', 'Response', 'App', 'HTTPException', 'Context')
-
 FORMAT = '[%(asctime)-15s] %(message)s'
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('xweb')
 logger.setLevel(logging.DEBUG)
+
+__version__ = '0.1.2'
+__author__ = 'Jiuli Gao'
+__all__ = ('Request', 'Response', 'App', 'HTTPException', 'Context', 'HTTPStatus', 'logger')
 
 
 class HTTPException(Exception):
