@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
 Frameworks| Requests/Sec | Version
 -----|-----|-----
-xweb|90000|0.1.0
+xweb|100000|0.1.1
 vibora|90000|0.0.6
 meinheld + wsgi|77000|0.6.1
 sanic|50000|0.7.0

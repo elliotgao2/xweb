@@ -15,7 +15,7 @@ try:
 except ImportError:
     pass
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Jiuli Gao'
 __all__ = ('Request', 'Response', 'App', 'XWebWorker', 'HTTPException', 'Context')
 
@@ -123,11 +123,10 @@ class HTTPProtocol(asyncio.Protocol):
         self.ctx.req.headers[name.decode()] = value.decode()
 
     def on_body(self, body):
-        self.ctx.req.raw = body
+        self.ctx.req.raw += body
 
     def on_message_complete(self):
-        task = self.loop.create_task(self.handler(self.ctx))
-        task.add_done_callback(self.ctx.send)
+        self.ctx.send(asyncio.wait(partial(self.handler, self.ctx)))
 
     def data_received(self, data):
         self.parser.feed_data(data)

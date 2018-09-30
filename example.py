@@ -9,7 +9,7 @@ app = App()
 async def logger(ctx, fn):
     await fn()
     rt = ctx['X-Response-Time']
-    print(rt)
+    # print(rt)
 
 
 @app.use
