@@ -90,14 +90,30 @@ class Context:
     def abort(self, status, msg="", properties=""):
         raise HTTPException(status=status, msg=msg, properties=properties)
 
-    def __getattr__(self, name):
-        return getattr(self.req, name)
+    def __getattr__(self, item):
+        return getattr(self.req, item)
 
     def __getitem__(self, item):
         return getattr(self, item)
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
+
+    @property
+    def body(self):
+        return self.res.body
+
+    @body.setter
+    def body(self, value):
+        self.res.body = value
+
+    @property
+    def status(self):
+        return self.res.status
+
+    @status.setter
+    def status(self, value):
+        self.res.status = value
 
 
 class HTTPProtocol(asyncio.Protocol):
