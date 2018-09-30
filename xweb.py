@@ -115,6 +115,14 @@ class Context:
     def status(self, value):
         self.res.status = value
 
+    @property
+    def msg(self):
+        return self.res.msg
+
+    @msg.setter
+    def msg(self, value):
+        self.res.msg = value
+
 
 class HTTPProtocol(asyncio.Protocol):
 
