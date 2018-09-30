@@ -81,8 +81,7 @@ class Context:
         self.res = Response()
         self.write = None
 
-    def send(self, *args):
-        # logger.debug(f'{self.req.ip} {self.req.url} {self.res.status} {self.res.msg}')
+    def send(self, _):
         self.write(bytes(self.res))
 
     def check(self, value, status=400, msg='', properties=""):
