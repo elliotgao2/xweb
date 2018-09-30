@@ -71,7 +71,6 @@ class Response:
         http_body_raw = self.body.encode()
         self.headers['Content-Length'] = len(http_body_raw)
         http_header_raw = "".join([f'{k}: {v}\r\n' for k, v in self.headers.items()]).encode() + b'\r\n'
-
         return http_status_raw + http_header_raw + http_body_raw
 
 
