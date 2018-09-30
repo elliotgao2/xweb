@@ -127,9 +127,9 @@ vibora|90000|0.0.6
 meinheld + wsgi|77000|0.6.1
 sanic|50000|0.7.0
 
-## Deploy
+## Deploy and Run
 
-`gunicorn -w 4 -k xweb.XWebWorker app:app`
+`python app.py`.
 
 ## Test
 

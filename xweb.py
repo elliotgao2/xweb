@@ -8,7 +8,6 @@ from functools import partial
 from http import HTTPStatus
 
 import httptools
-from gunicorn.workers.base import Worker
 
 try:
     import uvloop
@@ -20,7 +19,7 @@ except ImportError:
 
 __version__ = '0.1.1'
 __author__ = 'Jiuli Gao'
-__all__ = ('Request', 'Response', 'App', 'XWebWorker', 'HTTPException', 'Context')
+__all__ = ('Request', 'Response', 'App', 'HTTPException', 'Context')
 
 FORMAT = '[%(asctime)-15s] %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -139,18 +138,6 @@ class HTTPProtocol(asyncio.Protocol):
         self.transport.close()
 
 
-class XWebWorker(Worker):
-
-    def run(self):
-        loop = asyncio.get_event_loop()
-        for sock in self.sockets:
-            sock.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            protocol = partial(HTTPProtocol, loop=loop, handler=self.app.callable)
-            server = loop.create_server(protocol, sock=sock)
-            loop.create_task(server)
-        loop.run_forever()
-
-
 class App:
     def __init__(self):
         self.handlers = []
@@ -169,28 +156,32 @@ class App:
             server.close()
             loop.close()
 
-    def listen(self, port=8000, host="127.0.0.1", workers=1):
+    def listen(self, port=8000, host="127.0.0.1", workers=multiprocessing.cpu_count()):
+        print(f'Starting xweb {__version__}')
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setblocking(False)
         sock.bind((host, port))
         os.set_inheritable(sock.fileno(), True)
-        for _ in range(workers):
-            worker = multiprocessing.Process(target=self.serve, kwargs=dict(sock=sock))
-            worker.daemon = True
-            worker.start()
-            self.workers.add(worker)
+
         try:
-            print(f'Serving at http://{host}:{port}')
+            print(f'Listening at: http://{host}:{port}')
+            print(f'Workers: {workers}')
+            for _ in range(workers):
+                worker = multiprocessing.Process(target=self.serve, kwargs=dict(sock=sock))
+                worker.daemon = True
+                worker.start()
+                print(f'Starting worker with pid: ({worker.pid})')
+                self.workers.add(worker)
             for worker in self.workers:
                 worker.join()
         except KeyboardInterrupt:
             print('\r', end='\r')
-            print('Server stopping...')
+            print('Server soft stopping')
             for worker in self.workers:
                 worker.terminate()
                 worker.join()
-            print('Server stopped!')
+            print('Server stopped successfully!')
         sock.close()
 
     async def __call__(self, ctx):
