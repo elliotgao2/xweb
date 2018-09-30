@@ -26,4 +26,4 @@ async def response(ctx):
 
 
 if __name__ == '__main__':
-    app.listen(8000)
+    app.listen(8000, workers=4)

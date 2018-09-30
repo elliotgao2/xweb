@@ -1,5 +1,8 @@
 import asyncio
 import logging
+import multiprocessing
+import os
+import socket
 from email.utils import formatdate
 from functools import partial
 from http import HTTPStatus
@@ -117,16 +120,17 @@ class HTTPProtocol(asyncio.Protocol):
         self.ctx.write = self.transport.write
 
     def on_url(self, url):
-        self.ctx.req.url = url.decode()
+        self.ctx.req.url = url
 
     def on_header(self, name, value):
-        self.ctx.req.headers[name.decode()] = value.decode()
+        self.ctx.req.headers[name] = value
 
     def on_body(self, body):
         self.ctx.req.raw += body
 
     def on_message_complete(self):
-        self.ctx.send(asyncio.wait(partial(self.handler, self.ctx)))
+        task = self.loop.create_task(self.handler(self.ctx))
+        task.add_done_callback(self.ctx.send)
 
     def data_received(self, data):
         self.parser.feed_data(data)
@@ -140,6 +144,7 @@ class XWebWorker(Worker):
     def run(self):
         loop = asyncio.get_event_loop()
         for sock in self.sockets:
+            sock.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             protocol = partial(HTTPProtocol, loop=loop, handler=self.app.callable)
             server = loop.create_server(protocol, sock=sock)
             loop.create_task(server)
@@ -149,10 +154,44 @@ class XWebWorker(Worker):
 class App:
     def __init__(self):
         self.handlers = []
-        self.debug = True
+        self.workers = set()
 
     def use(self, fn):
         self.handlers.append(fn)
+
+    def serve(self, sock):
+        loop = asyncio.new_event_loop()
+        server = loop.create_server(partial(HTTPProtocol, loop=loop, handler=self), sock=sock)
+        loop.create_task(server)
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            server.close()
+            loop.close()
+
+    def listen(self, port=8000, host="127.0.0.1", workers=1):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setblocking(False)
+        sock.bind((host, port))
+        os.set_inheritable(sock.fileno(), True)
+        for _ in range(workers):
+            worker = multiprocessing.Process(target=self.serve, kwargs=dict(sock=sock))
+            worker.daemon = True
+            worker.start()
+            self.workers.add(worker)
+        try:
+            print(f'Serving at http://{host}:{port}')
+            for worker in self.workers:
+                worker.join()
+        except KeyboardInterrupt:
+            print('\r', end='\r')
+            print('Server stopping...')
+            for worker in self.workers:
+                worker.terminate()
+                worker.join()
+            print('Server stopped!')
+        sock.close()
 
     async def __call__(self, ctx):
         if not self.handlers:
@@ -169,19 +208,3 @@ class App:
             ctx.res.status = e.status
             ctx.res.body = e.msg or HTTPStatus(e.status).phrase
             ctx.res.msg = e.properties
-
-    def listen(self, port=8000, host="127.0.0.1", debug=True):
-        self.debug = debug
-        logger.setLevel(self.debug)
-        loop = asyncio.get_event_loop()
-        protocol = partial(HTTPProtocol, loop=loop, handler=self)
-        server = loop.create_server(protocol, host=host, port=port)
-        loop.create_task(server)
-        try:
-            print(f'Serving at http://{host}:{port}/')
-            loop.run_forever()
-        except KeyboardInterrupt:
-            print('\r', end='\r')
-            print('Server stopped!')
-        server.close()
-        loop.close()
