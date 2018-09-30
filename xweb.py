@@ -157,7 +157,8 @@ class App:
             loop.close()
 
     def listen(self, port=8000, host="127.0.0.1", workers=multiprocessing.cpu_count()):
-        print(f'Starting xweb {__version__}')
+        pid = os.getpid()
+        print(f'[{pid}] Starting xweb {__version__}')
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setblocking(False)
@@ -165,23 +166,23 @@ class App:
         os.set_inheritable(sock.fileno(), True)
 
         try:
-            print(f'Listening at: http://{host}:{port}')
-            print(f'Workers: {workers}')
+            print(f'[{pid}] Listening at: http://{host}:{port}')
+            print(f'[{pid}] Workers: {workers}')
             for _ in range(workers):
                 worker = multiprocessing.Process(target=self.serve, kwargs=dict(sock=sock))
                 worker.daemon = True
                 worker.start()
-                print(f'Starting worker with pid: ({worker.pid})')
+                print(f'[{pid}] Starting worker with pid: {worker.pid}')
                 self.workers.add(worker)
             for worker in self.workers:
                 worker.join()
         except KeyboardInterrupt:
             print('\r', end='\r')
-            print('Server soft stopping')
+            print(f'[{pid}] Server soft stopping')
             for worker in self.workers:
                 worker.terminate()
                 worker.join()
-            print('Server stopped successfully!')
+            print(f'[{pid}] Server stopped successfully!')
         sock.close()
 
     async def __call__(self, ctx):
