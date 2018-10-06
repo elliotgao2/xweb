@@ -22,7 +22,7 @@ logging.basicConfig(format=FORMAT)
 logger = logging.getLogger('xweb')
 logger.setLevel(logging.DEBUG)
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 __author__ = 'Jiuli Gao'
 __all__ = ('Request', 'Response', 'App', 'HTTPException', 'Context', 'HTTPStatus', 'logger')
 
@@ -131,20 +131,21 @@ class HTTPProtocol(asyncio.Protocol):
         self.transport = None
         self.handler = handler
         self.loop = loop
-        self.ctx = Context()
+        self.ctx = None
 
     def connection_made(self, transport):
         self.parser = httptools.HttpRequestParser(self)
         self.transport = transport
-        client = transport.get_extra_info('peername')
-        self.ctx.req.ip = client[0]
-        self.ctx.write = self.transport.write
 
     def on_url(self, url):
-        self.ctx.req.url = url
+        self.ctx = Context()
+        client = self.transport.get_extra_info('peername')
+        self.ctx.req.ip = client[0]
+        self.ctx.write = self.transport.write
+        self.ctx.req.url = url.decode()
 
     def on_header(self, name, value):
-        self.ctx.req.headers[name] = value
+        self.ctx.req.headers[name.decode()] = value.decode()
 
     def on_body(self, body):
         self.ctx.req.raw += body
@@ -207,10 +208,13 @@ class App:
             print(f'[{pid}] Server stopped successfully!')
         sock.close()
 
+    async def entry(self, ctx, fn):
+        await fn
+
     async def __call__(self, ctx):
         if not self.handlers:
-            return
-        next_fn = None
+            ctx.abort(404)
+        next_fn = self.entry
         for handler in self.handlers[::-1]:
             if next_fn is not None:
                 next_fn = partial(handler, ctx=ctx, fn=next_fn)
