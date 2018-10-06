@@ -144,6 +144,7 @@ class HTTPProtocol(asyncio.Protocol):
         self.ctx.req.ip = client[0]
         self.ctx.write = self.transport.write
         self.ctx.req.url = url.decode()
+        self.ctx.req.method = self.parser.get_method().decode()
 
     def on_header(self, name, value):
         self.ctx.req.headers[name.decode()] = value.decode()
