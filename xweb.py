@@ -6,6 +6,7 @@ import socket
 from email.utils import formatdate
 from functools import partial
 from http import HTTPStatus
+from inspect import signature
 
 import httptools
 
@@ -208,15 +209,13 @@ class App:
             print(f'[{pid}] Server stopped successfully!')
         sock.close()
 
-    async def entry(self, ctx, fn):
-        await fn
-
     async def __call__(self, ctx):
         if not self.handlers:
             ctx.abort(404)
-        next_fn = self.entry
+        next_fn = None
+
         for handler in self.handlers[::-1]:
-            if next_fn is not None:
+            if len(signature(handler).parameters) == 2:
                 next_fn = partial(handler, ctx=ctx, fn=next_fn)
             else:
                 next_fn = partial(handler, ctx=ctx)
