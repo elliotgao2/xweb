@@ -1,3 +1,4 @@
+ujson
 uvloop
 gunicorn
 httptools

@@ -1,35 +1,19 @@
 import asyncio
-import logging
 import multiprocessing
 import os
 import socket
+import ujson as json
 from email.utils import formatdate
 from functools import partial
 from http import HTTPStatus
-from inspect import signature
 
 import httptools
 
-try:
-    import uvloop
-
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-
-except ImportError:
-    pass
-
-FORMAT = '[%(asctime)-15s] %(message)s'
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger('xweb')
-logger.setLevel(logging.DEBUG)
-
-__version__ = '0.1.4'
-__author__ = 'Jiuli Gao'
-__all__ = ('Request', 'Response', 'App', 'HTTPException', 'Context', 'HTTPStatus', 'logger')
+__version__ = '3.0.0'
 
 
 class HTTPException(Exception):
-    def __init__(self, status, msg, properties):
+    def __init__(self, status, msg=None, properties=None):
         self.properties = properties
         self.msg = msg
         self.status = status
@@ -52,7 +36,7 @@ class Request:
 
 class Response:
     def __init__(self):
-        self.body = "Hello Xweb!"
+        self.body = ""
         self.status = 200
         self.msg = ""
         self.headers = {
@@ -68,21 +52,21 @@ class Response:
 
     def __bytes__(self):
         http_status = HTTPStatus(self.status)
-        http_status_raw = f"HTTP/1.1 {http_status.value} {http_status.phrase}\r\n".encode()
-        http_body_raw = self.body.encode()
-        self.headers['Content-Length'] = len(http_body_raw)
-        http_header_raw = "".join([f'{k}: {v}\r\n' for k, v in self.headers.items()]).encode() + b'\r\n'
-        return http_status_raw + http_header_raw + http_body_raw
+        http_status_bytes = f"HTTP/1.1 {http_status.value} {http_status.phrase}".encode()
+        http_body_bytes = self.body.encode()
+        self.headers['Content-Length'] = len(http_body_bytes)
+        http_header_bytes = "\r\n".join([f'{k}: {v}' for k, v in self.headers.items()]).encode()
+        return http_status_bytes + b'\r\n' + http_header_bytes + b'\r\n\r\n' + http_body_bytes
 
 
 class Context:
     def __init__(self):
         self.req = Request()
-        self.res = Response()
+        self.resp = Response()
         self.write = None
 
     def send(self, _):
-        self.write(bytes(self.res))
+        self.write(bytes(self.resp))
 
     def check(self, value, status=400, msg='', properties=""):
         if not value:
@@ -101,28 +85,32 @@ class Context:
         setattr(self, key, value)
 
     @property
+    def headers(self):
+        return self.resp.headers
+
+    @property
     def body(self):
-        return self.res.body
+        return self.resp.body
 
     @body.setter
     def body(self, value):
-        self.res.body = value
+        self.resp.body = value
 
     @property
     def status(self):
-        return self.res.status
+        return self.resp.status
 
     @status.setter
     def status(self, value):
-        self.res.status = value
+        self.resp.status = value
 
     @property
     def msg(self):
-        return self.res.msg
+        return self.resp.msg
 
     @msg.setter
     def msg(self, value):
-        self.res.msg = value
+        self.resp.msg = value
 
 
 class HTTPProtocol(asyncio.Protocol):
@@ -140,10 +128,9 @@ class HTTPProtocol(asyncio.Protocol):
 
     def on_url(self, url):
         self.ctx = Context()
-        client = self.transport.get_extra_info('peername')
-        self.ctx.req.ip = client[0]
         self.ctx.write = self.transport.write
-        self.ctx.req.url = url.decode()
+        url = httptools.parse_url(url)
+        self.ctx.req.path = url.path.decode()
         self.ctx.req.method = self.parser.get_method().decode()
 
     def on_header(self, name, value):
@@ -165,11 +152,8 @@ class HTTPProtocol(asyncio.Protocol):
 
 class App:
     def __init__(self):
-        self.handlers = []
         self.workers = set()
-
-    def use(self, fn):
-        self.handlers.append(fn)
+        self.routes = {}
 
     def serve(self, sock):
         loop = asyncio.new_event_loop()
@@ -183,7 +167,6 @@ class App:
 
     def listen(self, port=8000, host="127.0.0.1", workers=multiprocessing.cpu_count()):
         pid = os.getpid()
-        print(f'[{pid}] Starting xweb {__version__}')
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setblocking(False)
@@ -211,18 +194,45 @@ class App:
         sock.close()
 
     async def __call__(self, ctx):
-        if not self.handlers:
-            ctx.abort(404)
-        next_fn = None
-
-        for handler in self.handlers[::-1]:
-            if len(signature(handler).parameters) == 2:
-                next_fn = partial(handler, ctx=ctx, fn=next_fn)
-            else:
-                next_fn = partial(handler, ctx=ctx)
         try:
-            await next_fn()
+            handler = self.routes.get(ctx.req.path)
+            if not handler:
+                raise HTTPException(404)
+            await handler(ctx).request()
         except HTTPException as e:
-            ctx.res.status = e.status
-            ctx.res.body = e.msg or HTTPStatus(e.status).phrase
-            ctx.res.msg = e.properties
+            ctx.status = e.status
+            ctx.body = e.msg or HTTPStatus(e.status).phrase
+            ctx.msg = e.properties
+
+
+class Controller:
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    async def request(self):
+        self.ctx.headers['Content-Type'] = 'application/json'
+        await getattr(self, self.ctx.req.method.lower())()
+
+    async def get(self):
+        raise HTTPException(405)
+
+    async def post(self):
+        raise HTTPException(405)
+
+    async def put(self):
+        raise HTTPException(405)
+
+    async def delete(self):
+        raise HTTPException(405)
+
+
+class RESTController(Controller):
+
+    async def request(self):
+        self.ctx.headers['Content-Type'] = 'application/json'
+        await super().request()
+        self.ctx.body = json.dumps(self.ctx.body)
+
+
+class Model:
+    pass
