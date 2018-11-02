@@ -166,6 +166,10 @@ class App:
             loop.close()
 
     def listen(self, port=8000, host="127.0.0.1", workers=multiprocessing.cpu_count()):
+        import uvloop
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
         pid = os.getpid()
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
