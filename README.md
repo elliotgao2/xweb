@@ -12,9 +12,7 @@ High performance web framework.
 
 `pip install xweb`
 
-## Get Started
-
-### Hello World
+## Usage
 
 ```python
 from xweb import App, RESTController
