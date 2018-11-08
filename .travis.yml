@@ -1,8 +1,16 @@
 language: python
 python:
-  - '3.6'
+- '3.6'
 sudo: false
 install:
-    - pip install ./
-    - pip install -r requirements.txt
+- pip install ./
+- pip install -r requirements.txt
 script: pytest
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: gaojiuli
+  password:
+    secure: l8nnQggmePAgIsgCt3kgdiXUBACThoAOX0hWNRmtdgCLFQKCpoaXw0aEXhQdQDdJ07bdEBxNTk4KBeJLq4sgCY3sr2cJWZY+veIS3+Ycw1OPk8LCGqCHElSrIt9B7bDyGuzyMF7kNvo7YYn9gkb0AJ+HAx6CYT3mJ0tISFv+XwKN0NeS0D4iytwH0OqlSgCGDnHQNThdEF3gn7N6U86SXzYZIrHBlDgfIYSAh8UhcnbQg6EzWf08SEob2oB5vcQnBcnI4aQi5AqLFzrQHYZweWazmhmnlhQr9SPp21YZJZdbwRA83G1dQaqBJRyqT/lepjL5/Q1t88hYg96ASp/I2O1kcVfTrSdctVjIzVDK4afjSRQA2Y/E0+6JT9K1xOZUWkXER+wzzZZwoUWe8mK1SE7B2VocyMrMlU4Pa01zvfJsHR8oFiZr9idUK+IZPkD7Zsb0AUyJ8E2yaD3aD3wbqFvasN2dDuxWGRNaKMp9UM0nUK68zHyeY53gLQMfnEWH3osNRyouAX7jsCaxw20D3oYE2xe2+PT+Rj7AU3NEBFHgVhGEuvhohZEjVNzt6w2Ol93HzwIoIkDXcLmW6lrOUesmjkCYWdmMlTZhlSRfm0vEv6DYVuhDI81s5D13V5nnrPGKQ6JQRkJOx8atx3vm9MmRQZtZvzOrZH+MuPDAFIE=
+  on:
+    tags: true

@@ -8,8 +8,9 @@ from functools import partial
 from http import HTTPStatus
 
 import httptools
+from jsonschema import Draft4Validator, ErrorTree
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
 
 class HTTPException(Exception):
@@ -87,6 +88,10 @@ class Context:
     @property
     def headers(self):
         return self.resp.headers
+
+    @property
+    def json(self):
+        return json.loads(self.body)
 
     @property
     def body(self):
@@ -214,20 +219,10 @@ class Controller:
         self.ctx = ctx
 
     async def request(self):
-        self.ctx.headers['Content-Type'] = 'application/json'
-        await getattr(self, self.ctx.req.method.lower())()
-
-    async def get(self):
-        raise HTTPException(405)
-
-    async def post(self):
-        raise HTTPException(405)
-
-    async def put(self):
-        raise HTTPException(405)
-
-    async def delete(self):
-        raise HTTPException(405)
+        handler = getattr(self, self.ctx.req.method.lower(), None)
+        if not handler:
+            raise HTTPException(405)
+        await handler()
 
 
 class RESTController(Controller):
@@ -239,4 +234,11 @@ class RESTController(Controller):
 
 
 class Model:
-    pass
+    schema = {}
+
+    @classmethod
+    def validate(cls, data):
+        errors = ErrorTree(Draft4Validator(cls.schema).iter_errors(data)).errors
+        if errors:
+            raise HTTPException(400, msg=str(errors))
+        return data

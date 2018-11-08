@@ -23,7 +23,8 @@ setup(name='xweb',
           'ujson',
           'uvloop',
           'httptools',
-          'gunicorn'
+          'gunicorn',
+          'jsonschema'
       ],
       license='MIT',
       platforms='any',

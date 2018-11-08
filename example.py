@@ -1,9 +1,7 @@
-from jsonschema import Draft4Validator, ErrorTree
-
-from xweb import App, HTTPException, RESTController
+from xweb import App, Model, RESTController
 
 
-class Model:
+class UserModel(Model):
     schema = {
         "type": "object",
         "properties": {
@@ -13,16 +11,10 @@ class Model:
         "required": ['username']
     }
 
-    @classmethod
-    def validate(cls):
-        errors = ErrorTree(Draft4Validator(cls.schema).iter_errors({"name": "Eggs", "price": 34.99})).errors
-        if errors:
-            raise HTTPException(400, msg=str(errors))
-
 
 class EventController(RESTController):
     async def get(self):
-        Model.validate()
+        Model.validate(self.ctx.json)
         self.ctx.body = "222"
 
 
