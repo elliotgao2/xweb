@@ -15,7 +15,7 @@ class UserModel(Model):
 class EventController(RESTController):
     async def get(self):
         Model.validate(self.ctx.json)
-        self.ctx.body = "222"
+        self.ctx.body = {"Hello": "World"}
 
 
 app = App()
